@@ -282,14 +282,16 @@ export default function Page() {
       </section>
 
       <section className="card">
-        <h2>Try it{vaultConfigured ? "" : " — needs config"}</h2>
+        <h2>Try it{vaultConfigured ? "" : " — preview"}</h2>
         {!vaultConfigured ? (
           <p className="lede">
-            This deployment is missing <code>NEXT_PUBLIC_VAULT_ADDRESS</code> — the address
-            of the live <code>AsyncRevealVault</code> contract on Sepolia. Once it&apos;s set,
-            the form below becomes a live demo: connect wallet → encrypt → lock → wait → trigger → reveal.
-            See <a href="https://github.com/cryptoyasenka/fhevm-oracle-skill/blob/main/frontend/README.md" target="_blank" rel="noreferrer">frontend/README.md</a>{" "}
-            for the deploy steps.
+            The live contract on Sepolia is going up just before the Builder Track
+            submission — this preview deployment doesn&apos;t have its address wired up
+            yet. The flow you&apos;ll be able to run from this page:{" "}
+            <strong>connect wallet → encrypt amount + secret locally → lock on-chain
+            → wait for the timer → trigger → KMS reveals.</strong> Everything
+            client-side; no off-chain trusted party. The contract source is in this
+            project&apos;s GitHub repo (linked at the bottom of the page).
           </p>
         ) : !account ? (
           <p className="lede">Connect a wallet to start. Need test ETH? <a href="https://sepoliafaucet.com" target="_blank" rel="noreferrer">sepoliafaucet.com</a>.</p>
