@@ -6,78 +6,67 @@ import {ZamaEthereumConfig} from "@fhevm/solidity/config/ZamaConfig.sol";
 
 /// @title  AsyncRevealVault
 /// @notice Time-locked reveal primitive: deposit an encrypted (amount, secret) pair,
-///         decrypt it via the KMS oracle only after `revealAt`. Demonstrates the
-///         canonical 3-step async-decryption pattern from `fhevm-oracle` SKILL.md.
-/// @dev    Drills SKILL.md anti-patterns: signature check first (AP-001), guard
-///         consume before any external call (AP-002 / AP-008), handle order matches
-///         callback parameter order (AP-003), ACL discipline after every state mutation
-///         (AP-004), strict `>` finality on revealAt (AP-010).
+///         decrypt it via the KMS only after `revealAt`. Demonstrates the canonical
+///         3-step async-decryption pattern from `fhevm-oracle` SKILL.md as it actually
+///         exists in @fhevm/solidity 0.11.1 — `makePubliclyDecryptable` + a callback
+///         that verifies signatures with `FHE.checkSignatures(handles, cleartexts, proof)`.
+/// @dev    Drills SKILL.md anti-patterns:
+///           AP-001 — checkSignatures FIRST in fulfillReveal (else fake decryption)
+///           AP-002 — replay guard (`revealed` flag) before any state write
+///           AP-003 — handles[] order in fulfillReveal MUST match abi.decode tuple order
+///           AP-004 — `allowThis` after every state mutation in lock()
+///           AP-005 — `allow(_, depositor)` so the depositor can also user-decrypt off-chain
+///           AP-010 — strict `>` finality on revealAt
 contract AsyncRevealVault is ZamaEthereumConfig {
     // -----------------------------------------------------------------
     // Storage
     // -----------------------------------------------------------------
 
     struct Vault {
-        euint64  amount;                // encrypted at lock(), decrypted at fulfillReveal()
-        euint256 secret;                // encrypted at lock(), decrypted at fulfillReveal()
-        uint256  revealAt;              // unix seconds; reveal allowed when block.timestamp > revealAt
+        euint64  amount;
+        euint256 secret;
+        uint256  revealAt;
         address  depositor;
-        uint256  outstandingRequestID;  // 0 = no pending request, type(uint256).max = consumed
         bool     revealed;
-        uint64   clearAmount;           // populated by fulfillReveal()
-        uint256  clearSecret;           // populated by fulfillReveal()
+        uint64   clearAmount;
+        uint256  clearSecret;
     }
-
-    /// @dev sentinel written to a vault's outstandingRequestID after the callback
-    ///      consumes it. Any subsequent callback that hits this vault aborts.
-    uint256 private constant CONSUMED = type(uint256).max;
 
     uint256 public nextVaultId;
     mapping(uint256 vaultId => Vault) public vaults;
-    mapping(uint256 requestID => uint256 vaultId) public requestToVault;
 
     // -----------------------------------------------------------------
     // Events
     // -----------------------------------------------------------------
 
     event Locked(uint256 indexed vaultId, address indexed depositor, uint256 revealAt);
-    event RevealRequested(uint256 indexed vaultId, uint256 indexed requestID);
+    /// @dev Emitted when both ciphertexts have been flagged for KMS decryption. An
+    ///      off-chain relayer is expected to fetch the cleartext + KMS proof and call
+    ///      `fulfillReveal(vaultId, cleartexts, proof)`.
+    event RevealRequested(uint256 indexed vaultId);
     event Revealed(uint256 indexed vaultId, uint64 amount, uint256 secret);
-    event RequestCanceled(uint256 indexed vaultId, uint256 indexed requestID);
 
     // -----------------------------------------------------------------
     // Errors
     // -----------------------------------------------------------------
 
-    error RevealTooEarly();          // block.timestamp <= revealAt
-    error AlreadyRevealed();
-    error RequestPending();          // a previous triggerReveal is still in flight
-    error UnknownRequest();          // callback for a vault that already consumed
-    error NotDepositor();
-    error CancelTooEarly();          // grace window for relayer outage not elapsed yet
-    error NoPendingRequest();
-
-    /// @dev grace window after revealAt during which only the relayer may fulfill.
-    ///      Past this, the depositor can `cancelOutstandingRequest` and re-trigger.
-    ///      24h matches the SKILL.md AP-009 fallback recommendation.
-    uint256 public constant CANCEL_GRACE = 1 days;
+    error RevealTooEarly();      // block.timestamp <= revealAt (AP-010)
+    error AlreadyRevealed();     // anti-replay
+    error UnknownVault();
+    error NotDepositor();        // (reserved — depositor-only paths)
 
     // -----------------------------------------------------------------
     // Lock — accept encrypted (amount, secret) and a release timestamp
     // -----------------------------------------------------------------
 
     /// @notice Deposit an encrypted amount + secret that becomes decryptable after `revealAt`.
-    /// @param  encAmount  client-encrypted euint64 amount
-    /// @param  encSecret  client-encrypted euint256 secret
-    /// @param  proof      ZK input proof binding both ciphertexts to msg.sender + this contract
-    /// @param  revealAt   unix timestamp; reveal allowed strictly AFTER this moment
+    /// @dev    The same `proof` covers both ciphertext handles thanks to single-call binding.
     function lock(
         externalEuint64  encAmount,
         externalEuint256 encSecret,
         bytes calldata   proof,
         uint256          revealAt
     ) external returns (uint256 vaultId) {
-        // proof verifies BOTH handles + the (sender, this) binding in one call.
         euint64  amount = FHE.fromExternal(encAmount, proof);
         euint256 secret = FHE.fromExternal(encSecret, proof);
 
@@ -89,10 +78,10 @@ contract AsyncRevealVault is ZamaEthereumConfig {
         v.revealAt  = revealAt;
         v.depositor = msg.sender;
 
-        // SKILL.md AP-004: keep ciphertext usable across txs by re-allowing self.
+        // AP-004: keep ciphertexts usable across txs by re-allowing self.
         FHE.allowThis(amount);
         FHE.allowThis(secret);
-        // Allow the depositor to user-decrypt their own values off-chain at any time.
+        // AP-005: let the depositor user-decrypt off-chain at any time.
         FHE.allow(amount, msg.sender);
         FHE.allow(secret, msg.sender);
 
@@ -100,101 +89,78 @@ contract AsyncRevealVault is ZamaEthereumConfig {
     }
 
     // -----------------------------------------------------------------
-    // Trigger — ask the KMS oracle to decrypt (after revealAt)
+    // Trigger — flag both ciphertexts for public KMS decryption
     // -----------------------------------------------------------------
 
-    /// @notice After `revealAt`, anyone can ask the relayer to decrypt the vault.
-    /// @dev    Single in-flight request per vault. SKILL.md canonical step REQUEST.
-    function triggerReveal(uint256 vaultId) external returns (uint256 requestID) {
+    /// @notice After `revealAt`, anyone can request the KMS to decrypt the vault.
+    /// @dev    Marks both ciphertexts as publicly decryptable. The KMS off-chain
+    ///         picks up the event, decrypts, signs `(handles, cleartexts)`, and a
+    ///         relayer submits the proof via `fulfillReveal`. Idempotent — a second
+    ///         call before fulfillment is harmless: `makePubliclyDecryptable` is
+    ///         a no-op on already-flagged handles.
+    function triggerReveal(uint256 vaultId) external {
         Vault storage v = vaults[vaultId];
+        if (v.depositor == address(0))      revert UnknownVault();
+        if (v.revealed)                     revert AlreadyRevealed();
+        // AP-010: strict `>` — at exactly revealAt is too early.
+        if (block.timestamp <= v.revealAt)  revert RevealTooEarly();
 
-        if (v.depositor == address(0))     revert UnknownRequest();
-        if (v.revealed)                    revert AlreadyRevealed();
-        // AP-010: strict `>` — the second equal to revealAt is the FIRST allowed.
-        if (block.timestamp <= v.revealAt) revert RevealTooEarly();
+        FHE.makePubliclyDecryptable(v.amount);
+        FHE.makePubliclyDecryptable(v.secret);
 
-        // Single in-flight: outstandingRequestID must be 0 (never used) or CONSUMED.
-        // We re-use CONSUMED as "callback already ran" — that path is blocked by `revealed`.
-        if (v.outstandingRequestID != 0 && v.outstandingRequestID != CONSUMED) {
-            revert RequestPending();
-        }
-
-        // AP-003: handles[0]=amount, handles[1]=secret — callback parameter order MUST
-        // match this exactly (uint64 amount, uint256 secret).
-        bytes32[] memory handles = new bytes32[](2);
-        handles[0] = euint64.unwrap(v.amount);
-        handles[1] = euint256.unwrap(v.secret);
-
-        requestID = FHE.requestDecryption(handles, this.fulfillReveal.selector);
-
-        v.outstandingRequestID = requestID;
-        requestToVault[requestID] = vaultId;
-
-        emit RevealRequested(vaultId, requestID);
+        emit RevealRequested(vaultId);
     }
 
     // -----------------------------------------------------------------
-    // Fulfill — the KMS oracle calls this with cleartext + signatures
+    // Fulfill — KMS-signed cleartext callback
     // -----------------------------------------------------------------
 
-    /// @notice KMS callback. SKILL.md canonical step FULFILL.
-    /// @dev    Signature MUST be: (uint256 requestID, decoded values..., bytes[] signatures).
-    ///         Decoded values appear in the same order as handles[] passed to requestDecryption.
+    /// @notice Submit KMS-signed cleartexts for a previously-triggered vault.
+    /// @dev    SKILL.md FULFILL step. The signature on `(handles, cleartexts)` proves
+    ///         the cleartexts came from the KMS for THIS vault's exact ciphertext
+    ///         handles — anyone can call this, but only with a real KMS proof.
+    ///
+    ///         Anti-patterns drilled here:
+    ///         - AP-001: `FHE.checkSignatures` is the FIRST line — without it, anyone
+    ///                   could submit arbitrary cleartext.
+    ///         - AP-002: `revealed = true` consumed BEFORE state writes for the same
+    ///                   reason a checks-effects-interactions pattern matters.
+    ///         - AP-003: handles[] order MUST match the abi.decode tuple order. A swap
+    ///                   would let a real KMS proof for vault A land in vault B's slot.
     function fulfillReveal(
-        uint256        requestID,
-        uint64         amount,
-        uint256        secret,
-        bytes[] memory signatures
+        uint256        vaultId,
+        bytes calldata abiEncodedCleartexts,
+        bytes calldata decryptionProof
     ) external {
+        Vault storage v = vaults[vaultId];
+        if (v.depositor == address(0))      revert UnknownVault();
+        if (v.revealed)                     revert AlreadyRevealed();
+        if (block.timestamp <= v.revealAt)  revert RevealTooEarly();
+
+        // AP-003: handles[] ordering must match the abi.decode tuple order below.
+        bytes32[] memory handles = new bytes32[](2);
+        handles[0] = FHE.toBytes32(v.amount);
+        handles[1] = FHE.toBytes32(v.secret);
+
         // AP-001: signature verification BEFORE any state read or write. Without this,
-        // anyone can call this selector with arbitrary cleartext — a fake-decryption.
-        FHE.checkSignatures(requestID, signatures);
+        // anyone can call this selector with arbitrary cleartext — fake decryption.
+        FHE.checkSignatures(handles, abiEncodedCleartexts, decryptionProof);
 
-        uint256 vaultId = requestToVault[requestID];
-        if (vaultId == 0) revert UnknownRequest();
+        // AP-002: consume the replay guard BEFORE writing the cleartext / emitting.
+        v.revealed = true;
 
-        Vault storage v = vaults[vaultId];
+        // AP-003 again: tuple order MUST match handles[0], handles[1].
+        (uint64 clearAmount, uint256 clearSecret) =
+            abi.decode(abiEncodedCleartexts, (uint64, uint256));
 
-        // AP-002 / AP-008: consume the guard BEFORE writing the cleartext / emitting.
-        // Two parallel mappings cleared atomically — a second callback for this requestID
-        // hits requestToVault[requestID] == 0 above and reverts with UnknownRequest.
-        delete requestToVault[requestID];
-        v.outstandingRequestID = CONSUMED;
+        v.clearAmount = clearAmount;
+        v.clearSecret = clearSecret;
 
-        v.revealed     = true;
-        v.clearAmount  = amount;
-        v.clearSecret  = secret;
-
-        emit Revealed(vaultId, amount, secret);
+        emit Revealed(vaultId, clearAmount, clearSecret);
     }
 
     // -----------------------------------------------------------------
-    // Cancel — relayer-outage fallback (SKILL.md AP-009)
-    // -----------------------------------------------------------------
-
-    /// @notice If the KMS callback never fires within `CANCEL_GRACE` after revealAt,
-    ///         the depositor can drop the in-flight request and call `triggerReveal` again.
-    /// @dev    Only the depositor can cancel. The cancellation invalidates the previous
-    ///         requestID — if it lands later, `requestToVault[requestID] == 0` aborts it.
-    function cancelOutstandingRequest(uint256 vaultId) external {
-        Vault storage v = vaults[vaultId];
-
-        if (v.depositor != msg.sender)               revert NotDepositor();
-        if (v.revealed)                              revert AlreadyRevealed();
-        if (v.outstandingRequestID == 0)             revert NoPendingRequest();
-        if (v.outstandingRequestID == CONSUMED)      revert NoPendingRequest();
-        if (block.timestamp <= v.revealAt + CANCEL_GRACE) revert CancelTooEarly();
-
-        uint256 stale = v.outstandingRequestID;
-        delete requestToVault[stale];
-        v.outstandingRequestID = 0; // back to "no request" — depositor may re-trigger
-
-        emit RequestCanceled(vaultId, stale);
-    }
-
-    // -----------------------------------------------------------------
-    // Views — convenience accessors (the public mapping already exposes structs,
-    // but typed getters read better in tests + frontend).
+    // Views
     // -----------------------------------------------------------------
 
     function getEncryptedAmount(uint256 vaultId) external view returns (euint64) {
