@@ -56,12 +56,11 @@
 
 ### Frontend URL (live)
 
-> [PASTE FRONTEND URL — Railway/Cloudflare Pages, NOT Vercel per project rules]
+> https://fhevm-oracle-frontend.vercel.app
 >
-> Source: `frontend/` in this repo. Next.js 14 App Router, single client page,
-> standalone build output. Implements Connect → Encrypt+Lock → Trigger →
-> Fulfill (publicDecrypt + checkSignatures) end-to-end against Sepolia.
-> See `frontend/README.md` for local dev + Railway deploy instructions.
+> Source: `frontend/` in this repo. Next.js 14 App Router, single client page.
+> Implements Connect → Encrypt+Lock → Trigger → Fulfill (publicDecrypt +
+> checkSignatures) end-to-end against Sepolia. See `frontend/README.md`.
 
 ### Stack
 
