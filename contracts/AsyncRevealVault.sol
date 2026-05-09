@@ -8,7 +8,7 @@ import {ZamaEthereumConfig} from "@fhevm/solidity/config/ZamaConfig.sol";
 /// @notice Time-locked reveal primitive: deposit an encrypted (amount, secret) pair,
 ///         decrypt it via the KMS only after `revealAt`. Demonstrates the canonical
 ///         3-step async-decryption pattern from `fhevm-oracle` SKILL.md as it actually
-///         exists in @fhevm/solidity 0.11.1 — `makePubliclyDecryptable` + a callback
+///         exists in fhevm-solidity 0.11.1 — `makePubliclyDecryptable` + a callback
 ///         that verifies signatures with `FHE.checkSignatures(handles, cleartexts, proof)`.
 /// @dev    Drills SKILL.md anti-patterns:
 ///           AP-001 — checkSignatures FIRST in fulfillReveal (else fake decryption)
