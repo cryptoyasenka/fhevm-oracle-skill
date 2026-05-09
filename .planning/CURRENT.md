@@ -1,51 +1,56 @@
 # CURRENT — fhevm-oracle-skill
 
-**Last touched:** 2026-05-09 — bootstrap phase (Stage 1 prep snapshot taken)
-**Status:** repo initialized, scaffolding in place; SKILL.md + AsyncRevealVault not yet written (post-compact work)
+**Last touched:** 2026-05-09 (post-compact, all primary artifacts shipped)
+**Status:** ALL deliverables on disk + committed; awaiting Yana's `npm install` + Sepolia deploy + video record + form submit
 
 ## Status
-- [x] Strategy locked: Idea #1 `fhevm-oracle-skill` (Gap 1 — async decryption specialist), idea-pool ranked 26/30
+- [x] Strategy locked: narrow async-decryption specialist (Gap 1 vs. Makabeez baseline)
 - [x] Zama Bounty + Builder deadline verified: 2026-05-10 23:59 AOE = 2026-05-11 11:59 UTC
-- [x] Bounty Track artifact verified: production-ready SKILL.md + 3-min demo video (judging: accuracy, completeness, agent effectiveness, code quality, error prevention)
-- [x] Builder Track artifact verified: confidential dApp (contract+frontend) + 3-min video + Sepolia/mainnet deploy
-- [x] Canonical FHEVM API verified from zama-ai/fhevm-hardhat-template@v0.4.1 (May 2026) — see snapshot for package versions, imports, async API
-- [x] Repo bootstrapped (git init, .planning/, contracts/, test/, deploy/, tasks/)
-- [ ] package.json + hardhat.config.ts + .gitignore
-- [ ] hello-world FHECounter.sol (mirror of canonical) — sanity check
-- [ ] First commit
-- [ ] AUTO-COMPACT happens here (~37K tokens away)
-- [ ] SKILL.md (the bounty artifact) — primary deliverable
-- [ ] AsyncRevealVault.sol + tests/AsyncRevealVault.ts — Builder Track submission AND skill demo
-- [ ] Frontend (Builder Track) — minimal Next.js page (defer if time pressure)
-- [ ] README.md + BOUNTY-SUBMISSION.md + BUILDER-SUBMISSION.md + VIDEO-SCRIPT.md + SUBMIT-CHECKLIST.md
+- [x] Repo bootstrapped + first commit `3bb5331`
+- [x] **SKILL.md** (primary Bounty Track artifact) — committed `a927d86`, ~520 lines
+- [x] **contracts/AsyncRevealVault.sol** (Builder Track demo + skill proof) — committed `9fc032d`, ~220 lines
+- [x] **test/AsyncRevealVault.ts** (mock-mode tests, 4 cases) — committed `3b14aeb`
+- [x] **deploy/deploy.ts** + `deploy:hardhat` npm script — committed `3014fce`
+- [x] **VIDEO-SCRIPT.md** + **BOUNTY-SUBMISSION.md** + **BUILDER-SUBMISSION.md** + **SUBMIT-CHECKLIST.md** — committed `f4b529b`
+- [ ] `npm install` running in background (verify deps resolve cleanly)
+- [ ] `npx hardhat compile` — verify AsyncRevealVault compiles against @fhevm/solidity 0.11.1
+- [ ] `npx hardhat test` — verify 4 cases pass via fhevm.awaitDecryptionOracle()
+- [ ] **YANA'S MANUAL STEPS** (per SUBMIT-CHECKLIST.md): GitHub push, Sepolia deploy, video record, form fill, submit
 
 ## Open files
-- `C:/Projects/fhevm-oracle-skill/.planning/CURRENT.md` — this file
-- (next) `package.json`, `.gitignore`, `hardhat.config.ts`, `contracts/FHECounter.sol`
+- All primary artifacts committed; nothing in active edit
+- Next agent action: verify npm install + compile + test pass cleanly before declaring "done"
 
 ## Next step (concrete)
-1. Write `package.json` with verified dep versions (@fhevm/solidity@^0.11.1, @fhevm/hardhat-plugin@^0.4.2, etc.)
-2. Write `hardhat.config.ts` mirror of canonical fhevm-hardhat-template
-3. Write `.gitignore`
-4. Write `contracts/FHECounter.sol` (canonical hello-world clone) for sanity
-5. Initial commit `chore: bootstrap fhevm-oracle-skill`
-6. After auto-compact: read prep snapshot + this CURRENT.md, then write SKILL.md as next deliverable
+1. Wait for `npm install` background task (id `btn8gwhxa`) to finish
+2. Run `npx hardhat compile` — fix any pragma / import issues if AsyncRevealVault doesn't compile
+3. Run `npx hardhat test` — fix any test setup issues
+4. Optional: scaffold minimal `frontend/` Next.js page using @zama-fhe/relayer-sdk (Builder Track requires frontend URL)
+5. Final atomic commit + update this CURRENT.md to status: complete
 
 ## Decisions / constraints
-- **Skill scope = NARROW oracle specialist** (NOT broad — Makabeez covered broad with executable lint script)
-- **Demo contract = AsyncRevealVault** — encrypted (amount, secret) payload with revealAt timestamp; oracle decrypts after reveal time; replay-protected via revealedRequestID guard. Universal time-locked reveal primitive — original (not auction/vote/ERC20 derivative).
-- **Solidity 0.8.27** (not 0.8.24 like FHECounter.sol — the hardhat config sets version to 0.8.27, evmVersion cancun, optimizer 800 runs)
-- **Mock mode for tests** (`if (!fhevm.isMock) this.skip();` pattern) — no Sepolia required for Bounty Track
-- **Sepolia deploy** is Yana's manual step for Builder Track — pre-write deploy.ts + put exact CLI commands in SUBMIT-CHECKLIST.md
-- **Frontend** = minimal Next.js (Builder requirement) — defer to phase 2, ship Bounty package first
-- **Video** = Yana records using VIDEO-SCRIPT.md
-- **No Claude co-author in commits** (memory rule)
-- **No Vercel** for any future deploy (memory rule)
+- Skill scope = NARROW oracle specialist (complementary to Makabeez/fhevm-skill, not competing)
+- Demo contract = AsyncRevealVault (universal time-locked reveal primitive — sealed-bid auction / vesting cliff / dead-man switch in 220 lines)
+- Solidity 0.8.27 + evmVersion cancun + @fhevm/solidity ^0.11.1 + @fhevm/hardhat-plugin ^0.4.2
+- Mock-mode tests via `hre.fhevm.awaitDecryptionOracle()` (verified canonical from zama-ai/fhevm-mocks)
+- Replay protection: `delete requestToVault[requestID]` + `outstandingRequestID = type(uint256).max` BEFORE state writes
+- Strict `>` on revealAt (AP-010 finality)
+- 24h CANCEL_GRACE for relayer-outage fallback (AP-009)
+- No Claude co-author in commits, no .env in git, no Vercel for frontend deploy
+
+## Submission packages — ready for Yana
+- BOUNTY-SUBMISSION.md → forms.zama.org/developer-program-mainnet-season2-bounty-track
+- BUILDER-SUBMISSION.md → forms.zama.org/developer-program-mainnet-season2-builder-track
+- VIDEO-SCRIPT.md → 3-min demo recording template
+- SUBMIT-CHECKLIST.md → 6 phases, ~3-5h total work for Yana
 
 ## Pointer to prep snapshot
-`C:/Users/Yana/.claude/snapshots/pre-compact-prep-96b9106e-b6b1-4dd1-90dd-afd1aba617db.md` — full API surface + competitive intel + canonical code references
+`C:/Users/Yana/.claude/snapshots/pre-compact-prep-96b9106e-b6b1-4dd1-90dd-afd1aba617db.md`
 
-## Pointer to radar context
-- `C:/Projects/builder-programs-radar/watchlist/zama-bounty-2026-05-10.md`
-- `C:/Projects/builder-programs-radar/deep-dives/zama-bounty-track/idea-pool.md`
-- `C:/Projects/builder-programs-radar/deep-dives/zama-bounty-track/competitor-analysis.md`
+## Commits on `main`
+- 3bb5331 — bootstrap (package.json, hardhat.config, FHECounter, .gitignore, README, CURRENT.md)
+- a927d86 — Add SKILL.md (Bounty Track primary deliverable)
+- 9fc032d — Add AsyncRevealVault demo contract (Builder Track)
+- 3b14aeb — Add Hardhat mock-mode tests (4 cases drilling AP-001/002/008/010)
+- 3014fce — Add Sepolia deploy script
+- f4b529b — Add submission packages (video script, both forms pre-filled, checklist)
