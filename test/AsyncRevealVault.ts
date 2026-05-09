@@ -6,15 +6,18 @@ import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
 import type { AsyncRevealVault } from "../types";
 
 /**
- * Mock-mode tests for AsyncRevealVault. The @fhevm/hardhat-plugin auto-fulfills
- * decryption requests via `hre.fhevm.awaitDecryptionOracle()` — same pattern as
- * upstream zama-ai/fhevm-mocks/.../TestAsyncDecrypt.ts.
+ * Mock-mode tests for AsyncRevealVault. fhevm-solidity 0.11.1 has no
+ * `requestDecryption` oracle — public decryption is driven by
+ * `FHE.makePubliclyDecryptable(handle)` plus a separate caller-supplied
+ * `fulfillReveal(cleartexts, proof)` callback. The mock plugin gives us
+ * `hre.fhevm.debugger.createDecryptionSignatures` to forge the KMS proof
+ * inside the test.
  *
  * Each `it` drills one SKILL.md anti-pattern from a USER perspective:
- *   - "rejects reveal before time" — AP-010 finality
- *   - "decrypts after revealAt"     — canonical happy path (REQUEST → RELAYER → FULFILL)
- *   - "rejects double-trigger"      — AP-002/008 single in-flight guard
- *   - "rejects unknown requestID"   — AP-002 callback after consume returns 0 lookup
+ *   - "rejects reveal before time"        — AP-010 strict `>` finality
+ *   - "decrypts after revealAt"           — canonical happy path (TRIGGER → FULFILL)
+ *   - "rejects double fulfillReveal"      — AP-002 replay guard before any write
+ *   - "rejects fulfillReveal without sig" — AP-001 checkSignatures FIRST
  */
 describe("AsyncRevealVault", function () {
   let depositor: HardhatEthersSigner;
@@ -27,7 +30,7 @@ describe("AsyncRevealVault", function () {
 
   beforeEach(async function () {
     if (!fhevm.isMock) {
-      // The fhevm plugin is not in mock mode — Sepolia tests live in a separate file.
+      // Sepolia tests live in a separate file — mock plugin only.
       this.skip();
     }
 
@@ -39,7 +42,7 @@ describe("AsyncRevealVault", function () {
     vaultAddress = await vault.getAddress();
   });
 
-  /** Helper: encrypt (amount, secret) for `signer` against `vaultAddress`. */
+  /** Encrypt (amount, secret) for `signer` against `vaultAddress`. */
   async function encryptInputs(signer: HardhatEthersSigner, amount: bigint, secret: bigint) {
     const enc = await fhevm
       .createEncryptedInput(vaultAddress, signer.address)
@@ -49,19 +52,101 @@ describe("AsyncRevealVault", function () {
     return { encAmount: enc.handles[0], encSecret: enc.handles[1], proof: enc.inputProof };
   }
 
-  /** Helper: lock a vault that reveals `secondsFromNow` from latest block timestamp. */
+  /** Lock a vault that reveals `secondsFromNow` after the latest block. */
   async function lockVault(secondsFromNow: number): Promise<{ vaultId: bigint; revealAt: number }> {
     const now = await time.latest();
     const revealAt = now + secondsFromNow;
     const { encAmount, encSecret, proof } = await encryptInputs(depositor, AMOUNT, SECRET);
 
-    const tx = await vault
-      .connect(depositor)
-      .lock(encAmount, encSecret, proof, revealAt);
+    const tx = await vault.connect(depositor).lock(encAmount, encSecret, proof, revealAt);
     await tx.wait();
 
-    // First lock → vaultId = 1.
     return { vaultId: await vault.nextVaultId(), revealAt };
+  }
+
+  /**
+   * Default mock-mode KMS signer (verified in
+   *   `node_modules/@fhevm/hardhat-plugin/src/internal/constants.ts`
+   *   PRIVATE_KEY_KMS_SIGNER → 0x0971C80fF03B428fD2094dd5354600ab103201C5).
+   * Threshold is 1, so a single signature is sufficient.
+   */
+  const KMS_SIGNER_PK =
+    "0x388b7680e4e1afa06efbfd45cdd1fe39f3c6af381df6555a19661f283b97de91";
+  // `ZamaEthereumConfig` switches by `block.chainid`: hardhat (31337) uses
+  // the LocalConfig KMSVerifier, NOT the mainnet one. Ref:
+  // `node_modules/@fhevm/solidity/config/ZamaConfig.sol getEthereumCoprocessorConfig`.
+  const KMS_VERIFIER_ADDRESS = "0x901F8942346f7AB3a01F6D7613119Bca447Bb030";
+
+  /**
+   * Build the `(cleartexts, decryptionProof)` pair the KMS would produce for
+   * the given vault. The KMS encodes every cleartext value as `uint256`
+   * regardless of underlying euint type, then signs `(handles, cleartexts,
+   * extraData)` over the EIP-712 `PublicDecryptVerification` typed data of
+   * the KMSVerifier contract. The dApp callback decodes to its declared
+   * widths (uint64 / uint256 here) — the bytes are identical to
+   * `abi.encode(uint256, uint256)` for any value that fits in the narrower
+   * type, which is what we rely on.
+   *
+   * Proof layout (verified against
+   *   `node_modules/@fhevm/solidity/lib/FHE.sol` `isPublicDecryptionResultValid`
+   *   and `node_modules/@fhevm/mock-utils/.../KMSVerifier.ts buildDecryptionProof`):
+   *     numSigners(uint8) || sig0 || sig1 || ... || extraData(uint8 = v0 = 0)
+   *
+   * AP-003: handles[] order MUST match the abi.decode tuple order in the
+   * dApp callback. A swap here would yield a "valid" KMS signature pointing
+   * the wrong cleartext at the wrong slot.
+   */
+  async function buildKmsProof(vaultId: bigint) {
+    const handlesBytes32Hex = [
+      await vault.getEncryptedAmount(vaultId),
+      await vault.getEncryptedSecret(vaultId),
+    ];
+
+    const cleartexts = ethers.AbiCoder.defaultAbiCoder().encode(
+      ["uint256", "uint256"],
+      [AMOUNT, SECRET],
+    );
+    const extraData = "0x00"; // v0 marker
+
+    const kmsVerifier = new ethers.Contract(
+      KMS_VERIFIER_ADDRESS,
+      [
+        "function eip712Domain() view returns (bytes1 fields, string name, string version, uint256 chainId, address verifyingContract, bytes32 salt, uint256[] extensions)",
+      ],
+      ethers.provider,
+    );
+    const [, name, version, chainId, verifyingContract] =
+      await kmsVerifier.eip712Domain();
+
+    const domain = {
+      name,
+      version,
+      chainId,
+      verifyingContract,
+    };
+    const types = {
+      PublicDecryptVerification: [
+        { name: "ctHandles", type: "bytes32[]" },
+        { name: "decryptedResult", type: "bytes" },
+        { name: "extraData", type: "bytes" },
+      ],
+    };
+    const message = {
+      ctHandles: handlesBytes32Hex,
+      decryptedResult: cleartexts,
+      extraData,
+    };
+
+    const kmsWallet = new ethers.Wallet(KMS_SIGNER_PK);
+    const sig = await kmsWallet.signTypedData(domain, types, message);
+
+    const proof = ethers.concat([
+      ethers.solidityPacked(["uint8"], [1]),
+      sig,
+      extraData,
+    ]);
+
+    return { cleartexts, proof, handlesBytes32Hex };
   }
 
   // ----------------------------------------------------------------------
@@ -84,21 +169,19 @@ describe("AsyncRevealVault", function () {
   });
 
   // ----------------------------------------------------------------------
-  // Canonical happy path: REQUEST → RELAYER → FULFILL with cleartext landing.
-  // Drills AP-001 (signature verified by FHE.checkSignatures inside callback)
-  // and AP-003 (handle order matches callback parameter order).
+  // Canonical happy path: TRIGGER → FULFILL with KMS-signed cleartext landing.
+  // Drills AP-001 (checkSignatures verifies the KMS proof) and AP-003
+  // (handle order matches abi.decode tuple).
   // ----------------------------------------------------------------------
   it("decrypts amount + secret after revealAt (canonical flow)", async function () {
     const { vaultId, revealAt } = await lockVault(1_000);
 
-    // Strictly past revealAt.
     await time.setNextBlockTimestamp(revealAt + 1);
 
-    const triggerTx = await vault.connect(other).triggerReveal(vaultId);
-    await triggerTx.wait();
+    await (await vault.connect(other).triggerReveal(vaultId)).wait();
 
-    // Plugin auto-fulfills the oracle request.
-    await fhevm.awaitDecryptionOracle();
+    const { cleartexts, proof } = await buildKmsProof(vaultId);
+    await (await vault.connect(other).fulfillReveal(vaultId, cleartexts, proof)).wait();
 
     expect(await vault.isRevealed(vaultId)).to.equal(true);
     const [clearAmount, clearSecret] = await vault.getClearValues(vaultId);
@@ -107,55 +190,44 @@ describe("AsyncRevealVault", function () {
   });
 
   // ----------------------------------------------------------------------
-  // AP-002 / AP-008: a second triggerReveal while a request is in flight reverts.
+  // AP-002: replay guard — once revealed, a second fulfillReveal must
+  // revert BEFORE re-running the signature/decode work.
   // ----------------------------------------------------------------------
-  it("rejects a second triggerReveal while one is in flight", async function () {
+  it("rejects a second fulfillReveal after a successful one (AP-002 replay)", async function () {
     const { vaultId, revealAt } = await lockVault(1_000);
     await time.setNextBlockTimestamp(revealAt + 1);
+    await (await vault.connect(other).triggerReveal(vaultId)).wait();
 
-    const tx1 = await vault.connect(other).triggerReveal(vaultId);
-    await tx1.wait();
+    const { cleartexts, proof } = await buildKmsProof(vaultId);
+    await (await vault.connect(other).fulfillReveal(vaultId, cleartexts, proof)).wait();
 
-    // BEFORE the relayer fulfills, a second trigger must revert.
-    await expect(vault.connect(depositor).triggerReveal(vaultId)).to.be.revertedWithCustomError(
-      vault,
-      "RequestPending",
-    );
-
-    // After fulfillment, the `revealed` flag blocks further triggers via AlreadyRevealed.
-    await fhevm.awaitDecryptionOracle();
-    await expect(vault.connect(other).triggerReveal(vaultId)).to.be.revertedWithCustomError(
-      vault,
-      "AlreadyRevealed",
-    );
+    await expect(
+      vault.connect(other).fulfillReveal(vaultId, cleartexts, proof),
+    ).to.be.revertedWithCustomError(vault, "AlreadyRevealed");
   });
 
   // ----------------------------------------------------------------------
-  // AP-001: only the KMS oracle (with valid signatures) can call fulfillReveal.
-  // A direct user call must revert at FHE.checkSignatures.
+  // AP-001: only KMS-signed cleartexts pass. A direct call with an empty /
+  // forged proof must revert at FHE.checkSignatures, BEFORE any state read.
   // ----------------------------------------------------------------------
-  it("rejects fulfillReveal called directly with no signatures (AP-001)", async function () {
+  it("rejects fulfillReveal with no valid signatures (AP-001)", async function () {
     const { vaultId, revealAt } = await lockVault(1_000);
     await time.setNextBlockTimestamp(revealAt + 1);
+    await (await vault.connect(other).triggerReveal(vaultId)).wait();
 
-    const tx = await vault.connect(other).triggerReveal(vaultId);
-    const receipt = await tx.wait();
+    const cleartexts = ethers.AbiCoder.defaultAbiCoder().encode(
+      ["uint256", "uint256"],
+      [AMOUNT, SECRET],
+    );
+    // Zero signers + valid extraData byte. KMSVerifier requires >=
+    // threshold real KMS signatures, so this MUST revert.
+    const bogusProof = ethers.concat([
+      ethers.solidityPacked(["uint8"], [0]),
+      ethers.solidityPacked(["uint8"], [0]),
+    ]);
 
-    // Pull the requestID out of the RevealRequested event.
-    const evt = receipt!.logs
-      .map((l) => {
-        try {
-          return vault.interface.parseLog({ topics: l.topics as string[], data: l.data });
-        } catch {
-          return null;
-        }
-      })
-      .find((x) => x?.name === "RevealRequested");
-    const requestID = evt!.args.requestID as bigint;
-
-    // No valid signatures — must revert (signature check is the FIRST line of the callback).
-    await expect(
-      vault.connect(other).fulfillReveal(requestID, AMOUNT, SECRET, []),
-    ).to.be.reverted; // checkSignatures throws; specific revert reason comes from FHE library.
+    await expect(vault.connect(other).fulfillReveal(vaultId, cleartexts, bogusProof)).to.be
+      .reverted;
+    expect(await vault.isRevealed(vaultId)).to.equal(false);
   });
 });
