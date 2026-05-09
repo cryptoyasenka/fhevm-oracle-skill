@@ -16,7 +16,11 @@ import {ZamaEthereumConfig} from "@fhevm/solidity/config/ZamaConfig.sol";
 ///           AP-003 — handles[] order in fulfillReveal MUST match abi.decode tuple order
 ///           AP-004 — `allowThis` after every state mutation in lock()
 ///           AP-005 — `allow(_, depositor)` so the depositor can also user-decrypt off-chain
+///           AP-008 — no external calls in fulfillReveal (cross-fn replay prevented by construction)
+///           AP-009 — `triggerReveal` is idempotent; `makePubliclyDecryptable` no-ops on already-flagged handles, so a relayer outage is recoverable by re-calling
 ///           AP-010 — strict `>` finality on revealAt
+///         AP-006 (allowTransient leak) and AP-007 (sync decrypt) are absent by construction —
+///         this contract uses neither primitive.
 contract AsyncRevealVault is ZamaEthereumConfig {
     // -----------------------------------------------------------------
     // Storage
@@ -53,7 +57,6 @@ contract AsyncRevealVault is ZamaEthereumConfig {
     error RevealTooEarly();      // block.timestamp <= revealAt (AP-010)
     error AlreadyRevealed();     // anti-replay
     error UnknownVault();
-    error NotDepositor();        // (reserved — depositor-only paths)
 
     // -----------------------------------------------------------------
     // Lock — accept encrypted (amount, secret) and a release timestamp
@@ -95,9 +98,11 @@ contract AsyncRevealVault is ZamaEthereumConfig {
     /// @notice After `revealAt`, anyone can request the KMS to decrypt the vault.
     /// @dev    Marks both ciphertexts as publicly decryptable. The KMS off-chain
     ///         picks up the event, decrypts, signs `(handles, cleartexts)`, and a
-    ///         relayer submits the proof via `fulfillReveal`. Idempotent — a second
-    ///         call before fulfillment is harmless: `makePubliclyDecryptable` is
-    ///         a no-op on already-flagged handles.
+    ///         relayer submits the proof via `fulfillReveal`.
+    ///
+    ///         AP-009: idempotent. A second call before fulfillment is harmless —
+    ///         `makePubliclyDecryptable` is a no-op on already-flagged handles —
+    ///         which is the relayer-outage fallback documented in SKILL.md.
     function triggerReveal(uint256 vaultId) external {
         Vault storage v = vaults[vaultId];
         if (v.depositor == address(0))      revert UnknownVault();
@@ -156,6 +161,8 @@ contract AsyncRevealVault is ZamaEthereumConfig {
         v.clearAmount = clearAmount;
         v.clearSecret = clearSecret;
 
+        // AP-008: no external calls (no `transfer`, no foreign-contract `call`) below this point,
+        // so cross-fn replay / re-entrancy via the recipient's fallback is prevented by construction.
         emit Revealed(vaultId, clearAmount, clearSecret);
     }
 

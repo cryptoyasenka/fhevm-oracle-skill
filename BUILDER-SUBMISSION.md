@@ -31,12 +31,14 @@
 >
 > ### Highlights for judges
 >
-> - `FHE.checkSignatures` is the FIRST line of the callback (no fake-decryption attack)
-> - Replay-protected: `delete requestToVault[requestID]` + `outstandingRequestID = type(uint256).max` consumed BEFORE state writes, so a duplicate or out-of-order callback aborts at `UnknownRequest`
-> - Strict `>` finality on `revealAt` (no off-by-one)
-> - Relayer-outage fallback: depositor can `cancelOutstandingRequest` after `CANCEL_GRACE` (24h) and re-trigger
-> - ACL discipline preserved across every state mutation: `allowThis` + `allow(_, depositor)` after `lock`
-> - Mock-mode Hardhat tests cover happy path + three failure modes; deterministic via `hre.fhevm.awaitDecryptionOracle()`
+> - `FHE.checkSignatures(handles, cleartexts, proof)` is the FIRST line of `fulfillReveal` — no fake-decryption attack possible (AP-001)
+> - Replay-protected: the `revealed` flag flips BEFORE any state write inside the callback, so a re-submission of the same KMS proof reverts at `AlreadyRevealed` (AP-002)
+> - Handle-tuple ordering: `handles[0] = amount`, `handles[1] = secret` matches the `abi.decode(_, (uint64, uint256))` tuple line-by-line; a swap would be a silent state-corruption bug (AP-003)
+> - ACL discipline preserved across every state mutation: `FHE.allowThis(amount/secret)` + `FHE.allow(_, depositor)` immediately after `lock` (AP-004 + AP-005)
+> - No external calls in `fulfillReveal` — cross-fn replay/reentrancy prevented by construction (AP-008)
+> - Idempotent `triggerReveal` — re-callable on relayer outage; `makePubliclyDecryptable` is a no-op on already-flagged handles (AP-009)
+> - Strict `>` finality on `revealAt` — at exactly `revealAt` is too early; first allowed second is `revealAt + 1` (AP-010)
+> - Mock-mode Hardhat tests cover happy path + three failure modes (replay, off-by-one, signature absence); deterministic via `hre.fhevm.publicDecrypt(handles)`
 
 ### GitHub repo URL
 
