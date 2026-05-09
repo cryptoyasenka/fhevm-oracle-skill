@@ -1,7 +1,7 @@
 # CURRENT — fhevm-oracle-skill
 
-**Last touched:** 2026-05-09 (post-compact, all primary artifacts shipped)
-**Status:** ALL deliverables on disk + committed; awaiting Yana's `npm install` + Sepolia deploy + video record + form submit
+**Last touched:** 2026-05-09 (tests green at cd10cef)
+**Status:** ALL primary artifacts on disk + committed + 4/4 mock tests pass; awaiting Yana's GitHub push + Sepolia deploy + video record + form submit
 
 ## Status
 - [x] Strategy locked: narrow async-decryption specialist (Gap 1 vs. Makabeez baseline)
@@ -12,9 +12,9 @@
 - [x] **test/AsyncRevealVault.ts** (mock-mode tests, 4 cases) — committed `3b14aeb`
 - [x] **deploy/deploy.ts** + `deploy:hardhat` npm script — committed `3014fce`
 - [x] **VIDEO-SCRIPT.md** + **BOUNTY-SUBMISSION.md** + **BUILDER-SUBMISSION.md** + **SUBMIT-CHECKLIST.md** — committed `f4b529b`
-- [ ] `npm install` running in background (verify deps resolve cleanly)
-- [ ] `npx hardhat compile` — verify AsyncRevealVault compiles against @fhevm/solidity 0.11.1
-- [ ] `npx hardhat test` — verify 4 cases pass via fhevm.awaitDecryptionOracle()
+- [x] `npm install` clean
+- [x] `npx hardhat compile` clean (AsyncRevealVault + FHECounter)
+- [x] `npx hardhat test` — **4/4 PASS** via `fhevm.publicDecrypt(handles)` (commit `cd10cef`)
 - [ ] **YANA'S MANUAL STEPS** (per SUBMIT-CHECKLIST.md): GitHub push, Sepolia deploy, video record, form fill, submit
 
 ## Open files
