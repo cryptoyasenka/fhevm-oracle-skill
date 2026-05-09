@@ -65,36 +65,24 @@ describe("AsyncRevealVault", function () {
   }
 
   /**
-   * Default mock-mode KMS signer (verified in
-   *   `node_modules/@fhevm/hardhat-plugin/src/internal/constants.ts`
-   *   PRIVATE_KEY_KMS_SIGNER → 0x0971C80fF03B428fD2094dd5354600ab103201C5).
-   * Threshold is 1, so a single signature is sufficient.
-   */
-  const KMS_SIGNER_PK =
-    "0x388b7680e4e1afa06efbfd45cdd1fe39f3c6af381df6555a19661f283b97de91";
-  // `ZamaEthereumConfig` switches by `block.chainid`: hardhat (31337) uses
-  // the LocalConfig KMSVerifier, NOT the mainnet one. Ref:
-  // `node_modules/@fhevm/solidity/config/ZamaConfig.sol getEthereumCoprocessorConfig`.
-  const KMS_VERIFIER_ADDRESS = "0x901F8942346f7AB3a01F6D7613119Bca447Bb030";
-
-  /**
    * Build the `(cleartexts, decryptionProof)` pair the KMS would produce for
-   * the given vault. The KMS encodes every cleartext value as `uint256`
-   * regardless of underlying euint type, then signs `(handles, cleartexts,
-   * extraData)` over the EIP-712 `PublicDecryptVerification` typed data of
-   * the KMSVerifier contract. The dApp callback decodes to its declared
-   * widths (uint64 / uint256 here) — the bytes are identical to
-   * `abi.encode(uint256, uint256)` for any value that fits in the narrower
-   * type, which is what we rely on.
+   * the given vault. We delegate to `hre.fhevm.publicDecrypt(handles)` which
+   * runs the full mock-mode flow inside the plugin's JSON-RPC interceptor:
+   *   1. ACL check — the handles must have been flagged via `makePubliclyDecryptable`
+   *      (which `triggerReveal` does on-chain).
+   *   2. The mock KMS reads cleartext from coprocessor state and signs
+   *      `PublicDecryptVerification(ctHandles, decryptedResult, extraData)`
+   *      EIP-712 with the KMS-signer wallet wired into the local KMSVerifier.
+   *   3. Plugin packs the proof = `numSigners(uint8) || sigs || extraData`
+   *      and returns it as `abiEncodedClearValues + decryptionProof`.
    *
-   * Proof layout (verified against
-   *   `node_modules/@fhevm/solidity/lib/FHE.sol` `isPublicDecryptionResultValid`
-   *   and `node_modules/@fhevm/mock-utils/.../KMSVerifier.ts buildDecryptionProof`):
-   *     numSigners(uint8) || sig0 || sig1 || ... || extraData(uint8 = v0 = 0)
-   *
-   * AP-003: handles[] order MUST match the abi.decode tuple order in the
-   * dApp callback. A swap here would yield a "valid" KMS signature pointing
+   * AP-003: handles[] order here MUST match the abi.decode tuple order in
+   * the dApp callback. A swap would yield a valid KMS signature pointing
    * the wrong cleartext at the wrong slot.
+   *
+   * Proof layout — verified against
+   *   `node_modules/@fhevm/solidity/lib/FHE.sol` (`isPublicDecryptionResultValid`)
+   *   and `node_modules/@fhevm/mock-utils/.../KMSVerifier.ts buildDecryptionProof`.
    */
   async function buildKmsProof(vaultId: bigint) {
     const handlesBytes32Hex = [
@@ -102,51 +90,12 @@ describe("AsyncRevealVault", function () {
       await vault.getEncryptedSecret(vaultId),
     ];
 
-    const cleartexts = ethers.AbiCoder.defaultAbiCoder().encode(
-      ["uint256", "uint256"],
-      [AMOUNT, SECRET],
-    );
-    const extraData = "0x00"; // v0 marker
-
-    const kmsVerifier = new ethers.Contract(
-      KMS_VERIFIER_ADDRESS,
-      [
-        "function eip712Domain() view returns (bytes1 fields, string name, string version, uint256 chainId, address verifyingContract, bytes32 salt, uint256[] extensions)",
-      ],
-      ethers.provider,
-    );
-    const [, name, version, chainId, verifyingContract] =
-      await kmsVerifier.eip712Domain();
-
-    const domain = {
-      name,
-      version,
-      chainId,
-      verifyingContract,
+    const result = await fhevm.publicDecrypt(handlesBytes32Hex);
+    return {
+      cleartexts: result.abiEncodedClearValues,
+      proof: result.decryptionProof,
+      handlesBytes32Hex,
     };
-    const types = {
-      PublicDecryptVerification: [
-        { name: "ctHandles", type: "bytes32[]" },
-        { name: "decryptedResult", type: "bytes" },
-        { name: "extraData", type: "bytes" },
-      ],
-    };
-    const message = {
-      ctHandles: handlesBytes32Hex,
-      decryptedResult: cleartexts,
-      extraData,
-    };
-
-    const kmsWallet = new ethers.Wallet(KMS_SIGNER_PK);
-    const sig = await kmsWallet.signTypedData(domain, types, message);
-
-    const proof = ethers.concat([
-      ethers.solidityPacked(["uint8"], [1]),
-      sig,
-      extraData,
-    ]);
-
-    return { cleartexts, proof, handlesBytes32Hex };
   }
 
   // ----------------------------------------------------------------------

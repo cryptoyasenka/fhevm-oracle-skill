@@ -32,3 +32,4 @@ yarn.lock
 frontend/.next
 frontend/out
 frontend/node_modules
+package-lock.json
