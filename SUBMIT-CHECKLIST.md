@@ -65,16 +65,44 @@ If you skip the live A/B and use cached agent responses, that's fine — judges 
 
 ---
 
-## Phase 4 — frontend (90 min, BUILDER TRACK ONLY — skip if time pressure)
+## Phase 4 — frontend deploy (30 min, BUILDER TRACK ONLY)
 
-The Builder Track form requires a "frontend URL". Bare minimum: a single Next.js page that calls `lock()` with a hardcoded amount + secret + 60-second `revealAt`, displays the vaultId, and after the timestamp shows a `triggerReveal` button + the decrypted result.
+**STATUS: code already shipped at `frontend/` (commit `7497f46`).** All you
+need to do is deploy it. `npm install` + `npm run build` were both green
+locally on this machine before commit; if those break on Railway, the issue
+is env-shaped, not code-shaped.
 
-- [ ] `frontend/` directory exists with `package.json` + `app/page.tsx`
-- [ ] Uses `@zama-fhe/relayer-sdk` for `createInstance` + `createEncryptedInput` + `userDecrypt`
-- [ ] Deploys to Railway / Cloudflare Pages / Fleek — **NOT Vercel** (per project rules)
+Local sanity (optional, 2 min):
+```bash
+cd frontend
+npm install
+cp .env.example .env.local
+# edit .env.local: NEXT_PUBLIC_VAULT_ADDRESS=<your Sepolia address from Phase 2>
+npm run build
+npm run start    # http://127.0.0.1:3000
+```
+
+Railway deploy (the canonical option — see `frontend/README.md`):
+
+1. Push the repo (Phase 1) so Railway can pull it.
+2. Railway → New Project → Deploy from GitHub → select `cryptoyasenka/fhevm-oracle-skill`.
+3. Settings → Root directory: `frontend`.
+4. Variables tab → add `NEXT_PUBLIC_VAULT_ADDRESS=<Sepolia address>`.
+5. Deploy. Railway autodetects Next.js + the `output: "standalone"` build.
+6. Generate a public domain (Settings → Networking → Generate domain).
+
+- [ ] Railway project deployed, public URL responds 200
+- [ ] Connect-wallet button works on Sepolia in a real browser
+- [ ] One full lock → trigger → fulfill round-trip works end-to-end (record this for the video!)
 - [ ] Live URL pasted into `BUILDER-SUBMISSION.md` → "Frontend URL"
 
-If you can't get the frontend up by hour 40, **submit the Bounty Track only** — that's a $1500 vs. zero choice. The Bounty Track does NOT require a frontend.
+If Railway is slow or you have account friction: Cloudflare Pages or fly.io
+both work the same way (`output: "standalone"` is host-agnostic). **Do not
+deploy to Vercel** — project rule.
+
+If you can't get the frontend deployed by hour 40, **submit the Bounty
+Track only** — that's a $1500 vs. zero choice. The Bounty Track does NOT
+require a frontend.
 
 ---
 

@@ -1,7 +1,7 @@
 # CURRENT — fhevm-oracle-skill
 
-**Last touched:** 2026-05-09 (tests green at cd10cef)
-**Status:** ALL primary artifacts on disk + committed + 4/4 mock tests pass; awaiting Yana's GitHub push + Sepolia deploy + video record + form submit
+**Last touched:** 2026-05-09 (frontend committed at 7497f46)
+**Status:** ALL primary artifacts + frontend on disk and committed; 4/4 mock tests pass + frontend `next build` green; awaiting Yana's GitHub push + Sepolia deploy + Railway deploy + video record + form submit
 
 ## Status
 - [x] Strategy locked: narrow async-decryption specialist (Gap 1 vs. Makabeez baseline)
@@ -15,18 +15,16 @@
 - [x] `npm install` clean
 - [x] `npx hardhat compile` clean (AsyncRevealVault + FHECounter)
 - [x] `npx hardhat test` — **4/4 PASS** via `fhevm.publicDecrypt(handles)` (commit `cd10cef`)
-- [ ] **YANA'S MANUAL STEPS** (per SUBMIT-CHECKLIST.md): GitHub push, Sepolia deploy, video record, form fill, submit
+- [x] **frontend/** Next.js 14 page (Connect / Lock / Trigger / Fulfill) — committed `7497f46`
+- [x] `cd frontend && npm install` clean, `npm run build` green (4/4 static pages, 185 kB First Load JS)
+- [ ] **YANA'S MANUAL STEPS** (per SUBMIT-CHECKLIST.md): GitHub push (private), Sepolia deploy, Railway frontend deploy, video record, form fill, submit
 
 ## Open files
-- All primary artifacts committed; nothing in active edit
-- Next agent action: verify npm install + compile + test pass cleanly before declaring "done"
+- All artifacts committed (last: `7497f46` — frontend); nothing in active edit
+- Next agent action: nothing pending — Yana takes over for manual steps
 
 ## Next step (concrete)
-1. Wait for `npm install` background task (id `btn8gwhxa`) to finish
-2. Run `npx hardhat compile` — fix any pragma / import issues if AsyncRevealVault doesn't compile
-3. Run `npx hardhat test` — fix any test setup issues
-4. Optional: scaffold minimal `frontend/` Next.js page using @zama-fhe/relayer-sdk (Builder Track requires frontend URL)
-5. Final atomic commit + update this CURRENT.md to status: complete
+None pending on this machine. Yana drives Phases 1-6 of SUBMIT-CHECKLIST.md.
 
 ## Decisions / constraints
 - Skill scope = NARROW oracle specialist (complementary to Makabeez/fhevm-skill, not competing)
@@ -54,3 +52,9 @@
 - 3b14aeb — Add Hardhat mock-mode tests (4 cases drilling AP-001/002/008/010)
 - 3014fce — Add Sepolia deploy script
 - f4b529b — Add submission packages (video script, both forms pre-filled, checklist)
+- 5474ae8 — Fix AsyncRevealVault to use real @fhevm/solidity 0.11.1 API
+- e12df20 — Fix NatSpec @-tag parse error
+- f958a5f — Rewrite SKILL.md to match real fhevm-solidity 0.11.1 API
+- cd10cef — 4/4 mock-mode tests pass via fhevm.publicDecrypt
+- f30c2ac — docs: CURRENT.md tests-green snapshot
+- 7497f46 — Add Next.js frontend for Builder Track (current HEAD)
