@@ -30,6 +30,10 @@ test/
 hardhat.config.ts
 deploy/
   deploy.ts                    <-- Sepolia deploy script for the Builder Track demo
+frontend/                      <-- Next.js 14 client app (Builder Track URL artifact)
+  README.md                    <-- local dev + Railway deploy guide
+  app/page.tsx                 <-- Connect / Lock / Trigger / Fulfill UI
+  lib/fhevm.ts                 <-- relayer-sdk lazy init wrapper
 SUBMIT-CHECKLIST.md            <-- step-by-step actions for submission
 BOUNTY-SUBMISSION.md           <-- pre-filled answers for forms.zama.org bounty form
 BUILDER-SUBMISSION.md          <-- pre-filled answers for forms.zama.org builder form
