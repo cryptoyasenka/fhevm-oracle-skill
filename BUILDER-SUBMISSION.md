@@ -44,7 +44,10 @@
 
 ### Sepolia deployment address
 
-> [PASTE AsyncRevealVault SEPOLIA ADDRESS AFTER `npm run deploy:sepolia`]
+> AsyncRevealVault: `0x256e8948057982D483C60F7c060E3253a4d6A49b`
+> https://sepolia.etherscan.io/address/0x256e8948057982D483C60F7c060E3253a4d6A49b
+>
+> Companion FHECounter (reference deploy from same script): `0x839A250cC9E5a55C35EB8b47e3E9f0B42d7ad912`
 
 ### Sepolia transaction (lock + reveal demo)
 
