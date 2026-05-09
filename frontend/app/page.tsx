@@ -189,17 +189,20 @@ export default function Page() {
 
   return (
     <main>
-      <header>
-        <div>
-          <h1>AsyncRevealVault</h1>
-          <p className="lede">
-            Deposit an encrypted (amount, secret) pair, decrypt it via the Zama KMS only after the
-            time lock expires. Demo of the canonical{" "}
-            <code>makePubliclyDecryptable → checkSignatures</code> flow from the{" "}
-            <code>fhevm-oracle</code> skill.
+      <header className="hero">
+        <div className="hero-text">
+          <span className="pill live">FHEVM · Sepolia testnet</span>
+          <h1>Lock a number on-chain that nobody can read — until your timer expires.</h1>
+          <p className="hero-lede">
+            <strong>AsyncRevealVault</strong> is a 220-line Solidity primitive that takes an
+            encrypted amount + secret from your wallet, stores them on Ethereum where neither
+            the contract, the validators, nor anyone else can decrypt them, and only after a
+            timestamp you choose lets the Zama KMS network reveal them publicly. Think
+            sealed-bid auctions, vesting cliffs, or messages that auto-publish if you stop
+            paying attention.
           </p>
         </div>
-        <div>
+        <div className="hero-actions">
           {!account ? (
             <button onClick={connect} disabled={status === "busy"}>Connect wallet</button>
           ) : !onSepolia ? (
@@ -207,41 +210,114 @@ export default function Page() {
           ) : (
             <span className="pill ok">{account.slice(0, 6)}…{account.slice(-4)}</span>
           )}
+          <a className="ghost-link" href="https://github.com/cryptoyasenka/fhevm-oracle-skill" target="_blank" rel="noreferrer">
+            View source on GitHub →
+          </a>
         </div>
       </header>
 
-      {!vaultConfigured && (
-        <section className="card">
-          <h2>Not configured</h2>
-          <p className="lede">
-            Set <code>NEXT_PUBLIC_VAULT_ADDRESS</code> in your hosting env to the Sepolia
-            deployment of <code>AsyncRevealVault</code>. Until then, this UI is read-only.
-          </p>
-        </section>
-      )}
+      <section className="card">
+        <h2>What you can build with this</h2>
+        <div className="usecases">
+          <div>
+            <h3>Sealed-bid auctions</h3>
+            <p>Every bid is a vault. Bids stay encrypted until the auction ends, then the
+            highest reveals — no off-chain auctioneer required.</p>
+          </div>
+          <div>
+            <h3>Vesting cliffs</h3>
+            <p>Lock a salary or grant amount; it becomes claimable only after the cliff
+            date. No trusted release agent.</p>
+          </div>
+          <div>
+            <h3>Dead-man switches</h3>
+            <p>A secret message that auto-publishes if you fail to reset the timer — a will,
+            a whistleblower drop, an SLA penalty.</p>
+          </div>
+          <div>
+            <h3>Commit-reveal randomness</h3>
+            <p>Multi-party seed commitment with a single shared reveal slot. Verifiable
+            fairness, no MEV-able ordering.</p>
+          </div>
+        </div>
+      </section>
 
-      {vaultConfigured && (
-        <section className="card">
-          <h2>Lock</h2>
+      <section className="card">
+        <h2>How it works in 4 steps</h2>
+        <ol className="steps">
+          <li>
+            <span className="step-n">1</span>
+            <div>
+              <strong>Encrypt in your browser.</strong> The Zama relayer SDK loads a TFHE
+              WASM engine, encrypts <code>amount</code> + <code>secret</code> with the live
+              KMS public key, and produces an input proof bound to your wallet.
+            </div>
+          </li>
+          <li>
+            <span className="step-n">2</span>
+            <div>
+              <strong>Lock on-chain.</strong> A single <code>lock()</code> tx stores both
+              ciphertexts plus the <code>revealAt</code> timestamp. From here even the
+              contract itself can&apos;t read the values.
+            </div>
+          </li>
+          <li>
+            <span className="step-n">3</span>
+            <div>
+              <strong>Trigger after the timer.</strong> Anyone calls{" "}
+              <code>triggerReveal(id)</code> once <code>now &gt; revealAt</code>. The
+              contract flags both ciphertexts as publicly decryptable.
+            </div>
+          </li>
+          <li>
+            <span className="step-n">4</span>
+            <div>
+              <strong>Fulfill with the KMS proof.</strong> The relayer asks the KMS network
+              to decrypt and sign. <code>fulfillReveal()</code> verifies the threshold
+              signatures on-chain via <code>FHE.checkSignatures</code>, then writes the
+              cleartext.
+            </div>
+          </li>
+        </ol>
+      </section>
+
+      <section className="card">
+        <h2>Try it{vaultConfigured ? "" : " — needs config"}</h2>
+        {!vaultConfigured ? (
+          <p className="lede">
+            This deployment is missing <code>NEXT_PUBLIC_VAULT_ADDRESS</code> — the address
+            of the live <code>AsyncRevealVault</code> contract on Sepolia. Once it&apos;s set,
+            the form below becomes a live demo: connect wallet → encrypt → lock → wait → trigger → reveal.
+            See <a href="https://github.com/cryptoyasenka/fhevm-oracle-skill/blob/main/frontend/README.md" target="_blank" rel="noreferrer">frontend/README.md</a>{" "}
+            for the deploy steps.
+          </p>
+        ) : !account ? (
+          <p className="lede">Connect a wallet to start. Need test ETH? <a href="https://sepoliafaucet.com" target="_blank" rel="noreferrer">sepoliafaucet.com</a>.</p>
+        ) : !onSepolia ? (
+          <p className="lede">Wrong network — switch to Sepolia (chain id 11155111).</p>
+        ) : (
           <div className="row">
             <div>
-              <label>Amount (uint64)</label>
+              <label>Amount</label>
               <input value={amount} onChange={(e) => setAmount(e.target.value)} />
+              <p className="hint">A regular number ≤ 2⁶⁴-1. Stored encrypted as <code>euint64</code>.</p>
             </div>
             <div>
-              <label>Secret (uint256, hex or dec)</label>
+              <label>Secret</label>
               <input value={secret} onChange={(e) => setSecret(e.target.value)} />
+              <p className="hint">Hex (<code>0x…</code>) or decimal, up to 32 bytes. Stored as <code>euint256</code>.</p>
             </div>
             <div>
               <label>Reveal in (sec)</label>
               <input value={delaySec} onChange={(e) => setDelaySec(e.target.value)} />
+              <p className="hint">Try 60 to see the full round-trip in a minute.</p>
             </div>
-            <button onClick={lock} disabled={!account || !onSepolia || status === "busy"}>
+            <button onClick={lock} disabled={status === "busy"}>
               Encrypt + lock
             </button>
           </div>
-        </section>
-      )}
+        )}
+      </section>
 
       {vaultConfigured && account && onSepolia && (
         <section className="card">
@@ -255,7 +331,7 @@ export default function Page() {
             const now = Math.floor(Date.now() / 1000);
             const ready = now > v.revealAt;
             return (
-              <div key={String(v.id)} className="card" style={{ marginTop: 8 }}>
+              <div key={String(v.id)} className="card vault-row">
                 <div className="row" style={{ alignItems: "start" }}>
                   <dl className="kv" style={{ flex: 2 }}>
                     <dt>id</dt><dd>{String(v.id)}</dd>
@@ -277,7 +353,7 @@ export default function Page() {
                       </>
                     )}
                   </dl>
-                  <div style={{ display: "flex", gap: 8, flex: 1 }}>
+                  <div className="vault-actions">
                     {!v.revealed && (
                       <>
                         <button
@@ -304,16 +380,22 @@ export default function Page() {
       )}
 
       <section className="card">
-        <h2>Activity</h2>
-        <pre className="log">{log.length === 0 ? "Waiting for actions…" : log.join("\n")}</pre>
+        <h2>Activity log</h2>
+        <pre className="log">{log.length === 0 ? "Nothing yet. Connect a wallet and lock a value to see the round-trip." : log.join("\n")}</pre>
       </section>
 
       <footer>
-        <a href="https://github.com/zama-ai/fhevm" target="_blank" rel="noreferrer">
-          Zama FHEVM
+        <a href="https://github.com/cryptoyasenka/fhevm-oracle-skill" target="_blank" rel="noreferrer">
+          GitHub
         </a>
         {" · "}
-        Built on the <code>fhevm-oracle</code> skill
+        <a href="https://github.com/cryptoyasenka/fhevm-oracle-skill/blob/main/SKILL.md" target="_blank" rel="noreferrer">
+          fhevm-oracle skill
+        </a>
+        {" · "}
+        <a href="https://docs.zama.ai/protocol" target="_blank" rel="noreferrer">
+          Zama Protocol docs
+        </a>
         {explorer && (
           <>
             {" · "}
