@@ -13,7 +13,28 @@ const MNEMONIC: string = vars.get(
   "MNEMONIC",
   "test test test test test test test test test test test junk",
 );
-const INFURA_API_KEY: string = vars.get("INFURA_API_KEY", "zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz");
+const INFURA_API_KEY: string = vars.get("INFURA_API_KEY", "");
+const PRIVATE_KEY_RAW: string = vars.get("PRIVATE_KEY", "");
+const PRIVATE_KEY: string = PRIVATE_KEY_RAW
+  ? PRIVATE_KEY_RAW.startsWith("0x")
+    ? PRIVATE_KEY_RAW
+    : `0x${PRIVATE_KEY_RAW}`
+  : "";
+
+const SEPOLIA_RPC_URL: string = vars.get(
+  "SEPOLIA_RPC_URL",
+  INFURA_API_KEY
+    ? `https://sepolia.infura.io/v3/${INFURA_API_KEY}`
+    : "https://ethereum-sepolia-rpc.publicnode.com",
+);
+
+const sepoliaAccounts = PRIVATE_KEY
+  ? [PRIVATE_KEY]
+  : {
+      mnemonic: MNEMONIC,
+      path: "m/44'/60'/0'/0/",
+      count: 10,
+    };
 
 const config: HardhatUserConfig = {
   defaultNetwork: "hardhat",
@@ -38,13 +59,9 @@ const config: HardhatUserConfig = {
       chainId: 31337,
     },
     sepolia: {
-      accounts: {
-        mnemonic: MNEMONIC,
-        path: "m/44'/60'/0'/0/",
-        count: 10,
-      },
+      accounts: sepoliaAccounts,
       chainId: 11155111,
-      url: `https://sepolia.infura.io/v3/${INFURA_API_KEY}`,
+      url: SEPOLIA_RPC_URL,
     },
   },
   paths: {
