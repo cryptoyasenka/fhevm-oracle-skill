@@ -1,7 +1,7 @@
 # CURRENT — fhevm-oracle-skill
 
-**Last touched:** 2026-05-10 (afternoon — UX polish iteration with Yana on live frontend)
-**Status:** UX polish round (8 commits today after morning hardening). Frontend cosmetics tightened — vault header simplified, dismissed-row badge moved, navbar Connect button when wallet detached. Awaiting Yana's on-chain demo + video recording + form submission.
+**Last touched:** 2026-05-10 (afternoon — Connect-button resilience fix after Yana reported clicks doing nothing)
+**Status:** UX polish + Connect fix pushed. Live verified: Vercel deploy is current (afacaa9 → now 65b9694), no JS errors, Connect button rendered in hero + Try-it. Suspect: MetaMask popup blocked / wallet locked → eth_requestAccounts hung → button stuck disabled. Hardened with 20s timeout + visible "Connecting…" label + 4001 user-reject handling. Awaiting Yana to hard-refresh and retry.
 
 ## Status
 
@@ -45,7 +45,7 @@
 - Nothing in active edit. All work committed and pushed through `609ee01` + this CURRENT.md update.
 
 ## UX commits today (after morning hardening)
-- `c7122e1` UX audit (9 issues), `30b1af2` wallet pill in navbar, `6120af5` activity-log empty state, `bab4372` Restore button visible, `95027bd` button cluster, `11556fe` Showing-all pill + dismissed badge, `1894a20` simplify vaults header, `609ee01` Connect button in navbar.
+- `c7122e1` UX audit (9 issues), `30b1af2` wallet pill in navbar, `6120af5` activity-log empty state, `bab4372` Restore button visible, `95027bd` button cluster, `11556fe` Showing-all pill + dismissed badge, `1894a20` simplify vaults header, `609ee01` Connect button in navbar (REVERTED), `afacaa9` move Connect from navbar to Try-it section, `65b9694` Connect resilience (20s timeout + Connecting label + 4001 handling).
 
 ## Open UX item
 - Yana said earlier "поле трай ит снова непонятным и перегруженным" — clarification asked but not answered. May resurface after Connect-button feedback. Try-it section has role-play callout + primitive hint + 3 inputs each with label + ?-tooltip + always-on hint — candidates for compaction.
