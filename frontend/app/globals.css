@@ -139,7 +139,13 @@ button {
   transition: filter 0.1s;
 }
 button:hover:not(:disabled) { filter: brightness(0.92); }
-button:disabled { opacity: 0.5; cursor: not-allowed; }
+button:disabled {
+  background: #1c212c;
+  color: #5a6175;
+  border: 1px solid var(--border);
+  cursor: not-allowed;
+  opacity: 1;
+}
 button.secondary {
   background: transparent;
   color: var(--fg);

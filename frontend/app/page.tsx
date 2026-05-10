@@ -192,7 +192,22 @@ export default function Page() {
         }
         list.push(v);
       }
-      list.sort((a, b) => Number(b.id - a.id));
+      // Priority sort: actionable vaults float to the top so the user always
+      // sees the one that needs a click first. Within each priority bucket,
+      // newest id first.
+      const now = Math.floor(Date.now() / 1000);
+      const priority = (v: Vault) => {
+        if (v.revealed) return 3;                              // done — bottom
+        if (now > v.revealAt && v.triggered) return 1;         // ready to fulfill
+        if (now > v.revealAt && !v.triggered) return 0;        // ready to trigger — top
+        return 2;                                              // still locked
+      };
+      list.sort((a, b) => {
+        const pa = priority(a);
+        const pb = priority(b);
+        if (pa !== pb) return pa - pb;
+        return Number(b.id - a.id);
+      });
       setVaults(list);
     } catch (e) {
       append(`Refresh failed: ${(e as Error).message}`);
