@@ -97,13 +97,39 @@ export default function Page() {
     try {
       setStatus("busy");
       const provider = new BrowserProvider(window.ethereum);
-      const accounts = (await provider.send("eth_requestAccounts", [])) as string[];
+      // If the wallet is locked or its popup is blocked, eth_requestAccounts
+      // can hang forever. Race it against a 20s timeout so the button doesn't
+      // get stuck "busy" silently — surface a clear log line instead.
+      const accountsPromise = provider.send("eth_requestAccounts", []) as Promise<string[]>;
+      const timeoutPromise = new Promise<never>((_, reject) =>
+        setTimeout(
+          () =>
+            reject(
+              new Error(
+                "wallet didn't respond in 20s — is MetaMask unlocked? (click the extension icon, then try again)",
+              ),
+            ),
+          20_000,
+        ),
+      );
+      const accounts = await Promise.race([accountsPromise, timeoutPromise]);
+      if (!accounts || accounts.length === 0) {
+        append("Connect failed: wallet returned no accounts. Unlock MetaMask and try again.");
+        return;
+      }
       const net = await provider.getNetwork();
       setAccount(accounts[0]);
       setChainId(net.chainId);
       append(`Connected ${accounts[0].slice(0, 10)}… on chain ${net.chainId}`);
     } catch (e) {
-      append(`Connect failed: ${(e as Error).message}`);
+      const msg = (e as Error).message ?? String(e);
+      // EIP-1193 user-rejection: code 4001
+      const code = (e as { code?: number }).code;
+      if (code === 4001) {
+        append("Connect cancelled in wallet popup.");
+      } else {
+        append(`Connect failed: ${msg}`);
+      }
     } finally {
       setStatus("idle");
     }
@@ -496,7 +522,9 @@ export default function Page() {
         <div className="hero-actions">
           {!account ? (
             <>
-              <button onClick={connect} disabled={status === "busy"}>Connect wallet</button>
+              <button onClick={connect} disabled={status === "busy"}>
+                {status === "busy" ? "Connecting…" : "Connect wallet"}
+              </button>
               <p className="hint" style={{ marginTop: 0 }}>
                 Needs MetaMask (or any EIP-1193 wallet) + a small amount of Sepolia
                 testnet ETH. Grab some free at{" "}
@@ -629,7 +657,7 @@ export default function Page() {
         ) : !account ? (
           <div style={{ display: "flex", flexDirection: "column", gap: 8, alignItems: "flex-start" }}>
             <button onClick={connect} disabled={status === "busy"}>
-              {status === "busy" ? "Working…" : "Connect wallet"}
+              {status === "busy" ? "Connecting…" : "Connect wallet"}
             </button>
             <p className="hint" style={{ margin: 0 }}>
               Need test ETH? <a href="https://sepoliafaucet.com" target="_blank" rel="noreferrer">sepoliafaucet.com</a>.
