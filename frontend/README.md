@@ -39,24 +39,30 @@ npm run start                      # serves the standalone build on :3000
 ```
 
 `next.config.js` is set to `output: "standalone"` so the build can run on any
-node host (Railway, Cloudflare Workers Containers, fly.io, a bare VM).
-**Do not deploy to Vercel** — see the project root README; the canonical
-deploy target for this demo is Railway.
+node host. The current live deployment is on Vercel via GitHub auto-deploy
+(see live URL in the project root README); Railway / Cloudflare / fly.io
+work the same way given the standalone output.
 
-### Railway one-click
+### Vercel (current host)
 
-1. Create a new Railway project from this repo's `frontend/` subdirectory
-   (Railway → New → Deploy from GitHub → set root directory = `frontend`).
+1. Vercel → New Project → Import the GitHub repo.
+2. Settings → Root directory: `frontend`.
+3. Variables tab → `NEXT_PUBLIC_VAULT_ADDRESS=0x…`.
+4. Deploy. Auto-redeploys on every push to `main`.
+
+### Railway alternative
+
+1. Railway → New → Deploy from GitHub → set root directory = `frontend`.
 2. Set the env var `NEXT_PUBLIC_VAULT_ADDRESS=0x…`.
 3. Railway autodetects Next.js + the `standalone` output and runs
    `npm run build && npm run start`. Default port `3000` is fine.
 
 ## How it maps to the skill
 
-| UI step | SDK call | Contract call | SKILL.md anchor |
+| UI step | SDK call | Contract call | What it drills |
 | --- | --- | --- | --- |
-| “Encrypt + lock” | `createEncryptedInput(...).add64.add256.encrypt()` | `lock(encA, encS, proof, revealAt)` | AP-008 (input proof) |
-| “Trigger” | — | `triggerReveal(id)` → `FHE.makePubliclyDecryptable` | AP-001 (publicly decryptable bit) |
-| “Fulfill” | `publicDecrypt([encA, encS])` | `fulfillReveal(id, cleartexts, proof)` → `FHE.checkSignatures` | AP-001/004 (KMS proof verify) |
+| "Encrypt + lock" | `createEncryptedInput(...).add64.add256.encrypt()` | `lock(encA, encS, proof, revealAt)` → `FHE.fromExternal` + `allowThis` + `allow(_, depositor)` | input-proof binding, ACL discipline (AP-004 + AP-005) |
+| "Trigger" | — | `triggerReveal(id)` → `FHE.makePubliclyDecryptable` | strict-`>` finality (AP-010), idempotent retrigger on relayer outage (AP-009) |
+| "Fulfill" | `publicDecrypt([encA, encS])` | `fulfillReveal(id, cleartexts, proof)` → `FHE.checkSignatures` then replay-guard flip then `abi.decode` | KMS proof verify before state write (AP-001), replay guard (AP-002), handle-tuple ordering (AP-003) |
 
 Read [`../SKILL.md`](../SKILL.md) for the full anti-pattern catalogue.

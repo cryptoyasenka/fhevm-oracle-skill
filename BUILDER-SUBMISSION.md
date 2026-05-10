@@ -31,7 +31,7 @@
 >
 > ### Highlights for judges
 >
-> - `FHE.checkSignatures(handles, cleartexts, proof)` is the FIRST line of `fulfillReveal` — no fake-decryption attack possible (AP-001)
+> - `FHE.checkSignatures(handles, cleartexts, proof)` runs before any state write or cleartext consumption inside `fulfillReveal` — no fake-decryption attack possible (AP-001). Three cheap input-validity reverts are allowed to sit above it because they touch no cleartext and mutate nothing.
 > - Replay-protected: the `revealed` flag flips BEFORE any state write inside the callback, so a re-submission of the same KMS proof reverts at `AlreadyRevealed` (AP-002)
 > - Handle-tuple ordering: `handles[0] = amount`, `handles[1] = secret` matches the `abi.decode(_, (uint64, uint256))` tuple line-by-line; a swap would be a silent state-corruption bug (AP-003)
 > - ACL discipline preserved across every state mutation: `FHE.allowThis(amount/secret)` + `FHE.allow(_, depositor)` immediately after `lock` (AP-004 + AP-005)
