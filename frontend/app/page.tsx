@@ -39,6 +39,9 @@ export default function Page() {
   // for what felt like a single press. A ref flips synchronously so the
   // second call returns immediately.
   const inFlight = useRef(false);
+  // 1-second tick so locked → "timer up" transitions, countdown text, and the
+  // canTrigger gate update without the user having to refresh or interact.
+  const [now, setNow] = useState(() => Math.floor(Date.now() / 1000));
 
   const onSepolia = chainId === SEPOLIA_CHAIN_ID;
   const vaultConfigured = !!VAULT_ADDRESS && VAULT_ADDRESS !== ethers.ZeroAddress;
@@ -253,6 +256,11 @@ export default function Page() {
   useEffect(() => {
     if (account && onSepolia) refreshVaults();
   }, [account, onSepolia, refreshVaults]);
+
+  useEffect(() => {
+    const t = setInterval(() => setNow(Math.floor(Date.now() / 1000)), 1000);
+    return () => clearInterval(t);
+  }, []);
 
   const lock = useCallback(async () => {
     if (!vaultConfigured || !account) return;
@@ -552,11 +560,20 @@ export default function Page() {
             <span className="pill">
               {vaults.filter((v) => showHidden || !hidden.has(String(v.id))).length}
             </span>
+            <button
+              onClick={refreshVaults}
+              className="ghost-btn"
+              style={{ marginLeft: 12 }}
+              disabled={status === "busy"}
+              title="Re-query Locked + RevealRequested events from Sepolia"
+            >
+              ↻ Refresh
+            </button>
             {vaults.some((v) => hidden.has(String(v.id))) && (
               <button
                 onClick={() => setShowHidden((s) => !s)}
                 className="ghost-btn"
-                style={{ marginLeft: 12 }}
+                style={{ marginLeft: 8 }}
                 title="Toggle the vaults you've dismissed"
               >
                 {showHidden
@@ -571,12 +588,23 @@ export default function Page() {
           {vaults
             .filter((v) => showHidden || !hidden.has(String(v.id)))
             .map((v) => {
-            const now = Math.floor(Date.now() / 1000);
             const ready = now > v.revealAt;
             const canTrigger = ready && !v.triggered && !v.revealed;
             const canFulfill = ready && v.triggered && !v.revealed;
+            const isHidden = hidden.has(String(v.id));
+            const remaining = v.revealAt - now;
+            const countdown =
+              remaining > 0
+                ? remaining >= 60
+                  ? `${Math.floor(remaining / 60)}m ${remaining % 60}s`
+                  : `${remaining}s`
+                : null;
             return (
-              <div key={String(v.id)} className="card vault-row">
+              <div
+                key={String(v.id)}
+                className="card vault-row"
+                style={isHidden ? { opacity: 0.5 } : undefined}
+              >
                 <div className="row" style={{ alignItems: "start" }}>
                   <dl className="kv" style={{ flex: 2 }}>
                     <dt>id</dt><dd>{String(v.id)}</dd>
@@ -647,9 +675,10 @@ export default function Page() {
                   <p className="hint" style={{ marginTop: 12 }}>
                     {!ready ? (
                       <>
-                        <strong>Locked.</strong> The ciphertexts are on-chain but nobody can read
-                        them — not even the contract — until <code>{new Date(v.revealAt * 1000).toLocaleTimeString()}</code>.
-                        Come back then to run steps 3 and 4.
+                        <strong>Locked — {countdown} left.</strong> The ciphertexts are on-chain
+                        but nobody can read them — not even the contract — until{" "}
+                        <code>{new Date(v.revealAt * 1000).toLocaleTimeString()}</code>. The
+                        Trigger button will light up automatically when the timer expires.
                       </>
                     ) : !v.triggered ? (
                       <>
