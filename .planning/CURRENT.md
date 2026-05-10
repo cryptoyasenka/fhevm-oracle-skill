@@ -1,7 +1,7 @@
 # CURRENT — fhevm-oracle-skill
 
-**Last touched:** 2026-05-10 (second-pass audit — found 3 internal contradictions, all fixed)
-**Status:** Two audit passes complete. First pass purged fictional APIs in submission docs (`576a6bf`). Second pass caught: BUILDER claim "FIRST line" contradicting tightened AP-001 NatSpec (`155aa50`); frontend/README skill-mapping table with random AP-NNN labels (`155aa50`); frontend/README + SUBMIT-CHECKLIST "Do not deploy to Vercel" while live URL IS Vercel (`155aa50`+`7b773c2`). All clean.
+**Last touched:** 2026-05-10 (third-pass polish — senior code review)
+**Status:** Three audit passes complete. First (`576a6bf`): purged fictional APIs in submissions. Second (`155aa50`+`7b773c2`): fixed BUILDER "FIRST line" wording, frontend/README AP-NNN table, stale Vercel directive. Third (`be77687`): contract NatSpec @dev block "FIRST line" → "BEFORE any state write" with parenthetical (matched the inline comment), test docstring `debugger.createDecryptionSignatures` → `publicDecrypt` (matched the real API), `next.config.js` + `.env.example` "NOT vercel-specific" → host-agnostic phrasing. 4/4 tests still pass.
 
 ## Status
 
@@ -96,6 +96,8 @@ Submission code + docs are clean. Yana's manual run:
 - FHECounter on Etherscan: https://sepolia.etherscan.io/address/0x839A250cC9E5a55C35EB8b47e3E9f0B42d7ad912
 
 ## Commits on `main` (latest first)
+- `be77687` — docs: third-pass polish — NatSpec/test header consistency + drop stale Vercel comments
+- `14f7935` — chore: CURRENT.md — second-pass audit complete
 - `7b773c2` — chore(checklist): Phase 4 — mark frontend deploy DONE
 - `155aa50` — docs: fix internal contradictions caught on second-pass audit
 - `c59555d` — chore: CURRENT.md — deep-audit pass complete
