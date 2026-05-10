@@ -357,6 +357,13 @@ button.ghost-btn.neutral:hover:not(:disabled) {
 .kv dt { color: var(--muted); }
 .kv dd { margin: 0; word-break: break-all; }
 
+.vaults-hidden-note {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--muted);
+  letter-spacing: 0;
+}
+
 .vault-row { margin-top: 12px; }
 
 /* Dismissed (locally hidden) row: dim the data + helper text so it's clearly

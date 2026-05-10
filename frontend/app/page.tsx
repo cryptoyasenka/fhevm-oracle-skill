@@ -747,42 +747,34 @@ export default function Page() {
               <h2 style={{ display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center" }}>
                 Your vaults
                 <span className="pill">{shownCount}</span>
-                <span
-                  className={showHidden ? "pill" : "pill ok"}
-                  title={
-                    showHidden
-                      ? "Showing every vault on this account, including the ones you dismissed (those appear dimmed)."
-                      : "Showing only the vaults you haven't dismissed."
-                  }
-                >
-                  {showHidden ? "Showing all" : "Visible only"}
-                </span>
                 {hiddenCount > 0 && !showHidden && (
-                  <span className="pill" style={{ opacity: 0.7 }}>
-                    {hiddenCount} dismissed hidden
+                  <span className="vaults-hidden-note">
+                    · {hiddenCount} hidden
                   </span>
                 )}
-                <button
-                  onClick={refreshVaults}
-                  className="ghost-btn neutral"
-                  disabled={refreshing || status === "busy"}
-                  title="Re-read the chain to pick up any vault state that changed since you last loaded the page."
-                >
-                  {refreshing ? "↻ Refreshing…" : "↻ Refresh"}
-                </button>
-                {hiddenCount > 0 && (
+                <span style={{ marginLeft: "auto", display: "inline-flex", gap: 8 }}>
                   <button
-                    onClick={() => setShowHidden((s) => !s)}
+                    onClick={refreshVaults}
                     className="ghost-btn neutral"
-                    title={
-                      showHidden
-                        ? "Switch back to showing only the vaults you haven't dismissed."
-                        : "Show every vault on this account, including the ones you dismissed."
-                    }
+                    disabled={refreshing || status === "busy"}
+                    title="Re-read the chain to pick up any vault state that changed since you last loaded the page."
                   >
-                    {showHidden ? "Show visible only" : `Show all (${vaults.length})`}
+                    {refreshing ? "↻ Refreshing…" : "↻ Refresh"}
                   </button>
-                )}
+                  {hiddenCount > 0 && (
+                    <button
+                      onClick={() => setShowHidden((s) => !s)}
+                      className="ghost-btn neutral"
+                      title={
+                        showHidden
+                          ? "Switch back to showing only the vaults you haven't dismissed."
+                          : "Show every vault on this account, including the ones you dismissed."
+                      }
+                    >
+                      {showHidden ? "Show visible only" : `Show hidden (${hiddenCount})`}
+                    </button>
+                  )}
+                </span>
               </h2>
               {vaults.length === 0 && (
                 <p className="lede">No vaults yet for this account on Sepolia. Lock one above to see it appear here.</p>
