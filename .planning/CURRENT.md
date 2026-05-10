@@ -1,7 +1,7 @@
 # CURRENT — fhevm-oracle-skill
 
-**Last touched:** 2026-05-10 (deep audit pass — pre-submission code & doc sweep)
-**Status:** Deep audit complete. 7-step review of contract, SKILL.md, package pins, README, hardhat config, tests, and both submission docs. Found + fixed fictional-API leftovers in BOUNTY-SUBMISSION.md (`requestDecryption`, `awaitDecryptionOracle`, 2-arg `checkSignatures`, unverified OZ ref) and one in BUILDER-SUBMISSION.md (`FHE.requestDecryption call`). Contract NatSpec also tightened (AP-001 wording). All clean.
+**Last touched:** 2026-05-10 (second-pass audit — found 3 internal contradictions, all fixed)
+**Status:** Two audit passes complete. First pass purged fictional APIs in submission docs (`576a6bf`). Second pass caught: BUILDER claim "FIRST line" contradicting tightened AP-001 NatSpec (`155aa50`); frontend/README skill-mapping table with random AP-NNN labels (`155aa50`); frontend/README + SUBMIT-CHECKLIST "Do not deploy to Vercel" while live URL IS Vercel (`155aa50`+`7b773c2`). All clean.
 
 ## Status
 
@@ -96,6 +96,9 @@ Submission code + docs are clean. Yana's manual run:
 - FHECounter on Etherscan: https://sepolia.etherscan.io/address/0x839A250cC9E5a55C35EB8b47e3E9f0B42d7ad912
 
 ## Commits on `main` (latest first)
+- `7b773c2` — chore(checklist): Phase 4 — mark frontend deploy DONE
+- `155aa50` — docs: fix internal contradictions caught on second-pass audit
+- `c59555d` — chore: CURRENT.md — deep-audit pass complete
 - `576a6bf` — docs(submissions): purge fictional async-decryption API references
 - `e31f2bb` — docs(contract): tighten AP-001 NatSpec
 - `6e8da4d` — chore: drop stale VIDEO-SCRIPT.md
