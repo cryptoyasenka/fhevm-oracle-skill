@@ -147,8 +147,11 @@ contract AsyncRevealVault is ZamaEthereumConfig {
         handles[0] = FHE.toBytes32(v.amount);
         handles[1] = FHE.toBytes32(v.secret);
 
-        // AP-001: signature verification BEFORE any state read or write. Without this,
-        // anyone can call this selector with arbitrary cleartext — fake decryption.
+        // AP-001: signature verification BEFORE any state write or cleartext use.
+        // (The three reverts above are cheap sanity checks that touch no cleartext and
+        // mutate nothing — gating them on the proof would just waste gas on bad inputs.)
+        // Without checkSignatures here, anyone could call this selector with arbitrary
+        // cleartext and we'd happily write it as if it came from the KMS — fake decryption.
         FHE.checkSignatures(handles, abiEncodedCleartexts, decryptionProof);
 
         // AP-002: consume the replay guard BEFORE writing the cleartext / emitting.
