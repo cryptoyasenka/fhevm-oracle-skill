@@ -440,7 +440,16 @@ export default function Page() {
             <a href="#log">Activity log</a>
           </div>
           <div className="topnav-right">
-            {account && (
+            {!account ? (
+              <button
+                onClick={connect}
+                disabled={status === "busy"}
+                className="topnav-connect"
+                title="Connect a wallet to start using the page."
+              >
+                Connect wallet
+              </button>
+            ) : (
               <span className="topnav-wallet">
                 {!onSepolia ? (
                   <button
