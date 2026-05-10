@@ -1,6 +1,6 @@
 # CURRENT — fhevm-oracle-skill
 
-**Last touched:** 2026-05-10 (fourth-pass polish — judge-eye sweep on video assets)
+**Last touched:** 2026-05-10 (master video plan + submission walkthrough committed)
 **Status:** Four audit passes complete. First (`576a6bf`): purged fictional APIs in submissions. Second (`155aa50`+`7b773c2`): fixed BUILDER "FIRST line" wording, frontend/README AP-NNN table, stale Vercel directive. Third (`be77687`): contract NatSpec @dev block "FIRST line" → "BEFORE any state write" with parenthetical (matched the inline comment), test docstring `debugger.createDecryptionSignatures` → `publicDecrypt` (matched the real API), `next.config.js` + `.env.example` "NOT vercel-specific" → host-agnostic phrasing. Fourth (`2d76979`): VIDEO-VOICEOVER segment 3, VIDEO-INSTRUCTIONS line 50, `scripts/gen_slides.py` strings + regenerated `slides/03-safety.png` and `slides/07-callout-checksig.png` — all rewordings now match contract NatSpec exactly so judge cross-referencing video to contract sees zero contradiction. SKILL.md prescriptive "FIRST" left intact (it's the teaching abstraction, contract honors it in spirit). 4/4 tests still pass.
 
 ## Status
@@ -33,13 +33,17 @@
 - [x] hardhat.config.ts supports PRIVATE_KEY var + public RPC fallback
 - [x] Repo PUBLIC at github.com/cryptoyasenka/fhevm-oracle-skill
 
-### Yana's remaining manual steps (morning 2026-05-10 → 2026-05-11 deadline)
-- [ ] Record demo video using `slides/*.png` per `.planning/VIDEO-INSTRUCTIONS-2026-05-10.md`
-- [ ] Run on-chain demo on the live frontend (lock + trigger + fulfill), capture fulfill-tx Etherscan URL
-- [ ] (Optional polish) Verify contract on Etherscan: needs `npx hardhat vars set ETHERSCAN_API_KEY` then `npx hardhat verify --network sepolia 0x256e8948057982D483C60F7c060E3253a4d6A49b` — no constructor args. **Not a submission blocker.**
-- [ ] Upload video to YouTube **unlisted**
-- [ ] Fill BOUNTY-SUBMISSION + BUILDER-SUBMISSION form `[PASTE …]` placeholders (video URL, fulfill-tx URL, prize wallet)
-- [ ] Submit both forms before 2026-05-11 11:59 UTC
+### Yana's remaining manual steps (deadline 2026-05-11 11:59 UTC)
+**Master playbook = `.planning/VIDEO-PLAN-FINAL.md`** (390 lines, single source-of-truth, contest rules verified via WebFetch on both Zama form pages).
+
+- [x] Fulfill-tx URL captured (vault id=4) and filled in BUILDER-SUBMISSION.md → commit `8e6c7ea`
+- [ ] Record demo video per VIDEO-PLAN-FINAL.md (≤3:00, **real-person pitch + real human voice — no TTS**, webcam bookend in segment 1 + 6)
+- [ ] Upload video to YouTube **unlisted** (NOT Private)
+- [ ] Fill `[PASTE YOUTUBE LINK]` in BOUNTY-SUBMISSION.md AND BUILDER-SUBMISSION.md
+- [ ] Fill `[PASTE WALLET ADDRESS]` in both
+- [ ] Submit Bounty form: forms.zama.org/developer-program-mainnet-season2-bounty-track
+- [ ] Submit Builder form: forms.zama.org/developer-program-mainnet-season2-builder-track
+- [ ] (Optional, not blocker) Verify contract on Etherscan via `npx hardhat verify`
 
 ## Open files
 - Nothing in active edit. All work committed and pushed through `576a6bf` + this CURRENT.md update.
@@ -61,14 +65,7 @@
 - Yana said earlier "поле трай ит снова непонятным и перегруженным" — clarification asked but not answered. May resurface after Connect-button feedback. Try-it section has role-play callout + primitive hint + 3 inputs each with label + ?-tooltip + always-on hint — candidates for compaction.
 
 ## Next step (concrete)
-Submission code + docs are clean. Yana's manual run:
-1. Hide vault id=2,3 in UI (one click each).
-2. Trigger + Fulfill vault id=1 → grab fulfill-tx Etherscan URL.
-3. Fill `BUILDER-SUBMISSION.md` placeholders: fulfill-tx URL, video URL, prize wallet.
-4. Fill `BOUNTY-SUBMISSION.md` placeholders: video URL, prize wallet.
-5. Record 3-min LIVE VOICE demo via `.planning/VIDEO-VOICEOVER.md` + `.planning/VIDEO-INSTRUCTIONS-2026-05-10.md` slide pack.
-6. Upload video to YouTube **unlisted** → paste URL into both submission MDs.
-7. Submit Bounty + Builder forms before 2026-05-11 11:59 UTC.
+**Yana opens `.planning/VIDEO-PLAN-FINAL.md` and follows it top to bottom.** It's the single playbook covering: rules → pre-recording prep → 6 recording segments with verbatim voice-over → CapCut editing → YouTube unlisted upload → Bounty form walkthrough → Builder form walkthrough → final checklist. Older fragmented files (VIDEO-INSTRUCTIONS, VIDEO-VOICEOVER, TOMORROW) remain in `.planning/` as references the master plan links into.
 
 ## Decisions / constraints
 - Skill scope = NARROW oracle specialist (complementary to Makabeez/fhevm-skill)
@@ -82,11 +79,11 @@ Submission code + docs are clean. Yana's manual run:
 - Throwaway deploy wallet — do not reuse for anything valuable
 
 ## Submission packages — ready for Yana
-- `BOUNTY-SUBMISSION.md` → forms.zama.org/developer-program-mainnet-season2-bounty-track
-- `BUILDER-SUBMISSION.md` → forms.zama.org/developer-program-mainnet-season2-builder-track (Sepolia address filled, three `[PASTE]` placeholders left for Yana)
-- `.planning/VIDEO-INSTRUCTIONS-2026-05-10.md` — recording playbook keyed to `slides/*.png`
-- `.planning/VIDEO-VOICEOVER.md` — ~360-word script
-- `.planning/TOMORROW-2026-05-10.md` — morning checklist
+- **`.planning/VIDEO-PLAN-FINAL.md`** — MASTER playbook (390 lines): contest rules verified, prep, 6 recording segments verbatim, CapCut, YouTube, both form walkthroughs
+- `BOUNTY-SUBMISSION.md` → forms.zama.org/developer-program-mainnet-season2-bounty-track (two `[PASTE]` placeholders left)
+- `BUILDER-SUBMISSION.md` → forms.zama.org/developer-program-mainnet-season2-builder-track (fulfill-tx filled, two `[PASTE]` placeholders left: video URL + wallet)
+- `.planning/VIDEO-INSTRUCTIONS-2026-05-10.md` — older slide-by-slide playbook (referenced by master)
+- `.planning/VIDEO-VOICEOVER.md` — ~360-word script (referenced by master)
 - `slides/01-…06-outro.png` + `07-…09-callout-*.png` — drop straight into CapCut
 
 ## Live URLs
@@ -96,6 +93,9 @@ Submission code + docs are clean. Yana's manual run:
 - FHECounter on Etherscan: https://sepolia.etherscan.io/address/0x839A250cC9E5a55C35EB8b47e3E9f0B42d7ad912
 
 ## Commits on `main` (latest first)
+- `7d7aa55` — docs: master video plan + submission walkthrough — verified against Zama S2 form rules
+- `8e6c7ea` — docs(builder): fill Sepolia fulfill-tx URL — vault id=4 cycle from frontend smoke-test
+- `1804848` — chore: CURRENT.md — record fourth-pass commits
 - `56b9c26` — docs(submissions): BUILDER AP-002 wording — 'state write' → 'cleartext write'
 - `2d76979` — docs(video): fourth-pass — script + slides match contract NatSpec ('FIRST line' → 'before any state write')
 - `be77687` — docs: third-pass polish — NatSpec/test header consistency + drop stale Vercel comments
