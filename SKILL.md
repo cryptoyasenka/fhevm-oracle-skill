@@ -385,7 +385,7 @@ const proof = ethers.concat([
 await vault.fulfillReveal(vaultId, cleartexts, proof);
 ```
 
-(Verify the proof packing format by reading `node_modules/@fhevm/solidity/lib/FHE.sol` `isPublicDecryptionResultValid` — that function describes the exact layout.)
+(Verify the proof packing format by reading `FHE.isPublicDecryptionResultValid` in [`@fhevm/solidity/lib/FHE.sol`](https://github.com/zama-ai/fhevm-solidity) — that function describes the exact layout.)
 
 ---
 
