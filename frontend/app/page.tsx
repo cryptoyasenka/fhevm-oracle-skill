@@ -878,7 +878,6 @@ export default function Page() {
                           ? "Bring this vault back to the visible list."
                           : "Hide this vault from the dashboard. The vault stays on-chain — this only affects your local view."
                       }
-                      style={{ marginLeft: "auto" }}
                     >
                       {isHidden ? "↺ Restore" : "✕ Hide"}
                     </button>

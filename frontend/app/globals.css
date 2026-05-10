@@ -373,17 +373,16 @@ button.ghost-btn.neutral:hover:not(:disabled) {
   display: flex;
   gap: 8px;
   flex: 1;
-  flex-wrap: wrap;
   align-items: center;
+  justify-content: flex-end;
 }
 
 @media (max-width: 640px) {
-  /* On phones the vault row's two columns (kv on the left, action buttons on
-     the right) are forced to stack via .row's flex-wrap. Make sure the
-     actions row hugs the start so the Hide button doesn't get pushed to its
-     own line by margin-left:auto. */
-  .vault-actions { width: 100%; }
-  .vault-actions button[style*="margin-left"] { margin-left: 0 !important; }
+  /* On phones the vault row's two columns stack via .row's flex-wrap. Let
+     the action buttons wrap onto a new line if the trigger/fulfill/hide
+     trio is too wide for the viewport, and keep them left-aligned so the
+     row doesn't look adrift. */
+  .vault-actions { flex-wrap: wrap; width: 100%; justify-content: flex-start; }
   .hero { padding: 24px 18px 22px; }
   .hero h1 { font-size: 24px; }
 }
