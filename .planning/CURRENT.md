@@ -37,7 +37,7 @@
 **Master playbook = `.planning/VIDEO-PLAN-FINAL.md`** (390 lines, single source-of-truth, contest rules verified via WebFetch on both Zama form pages).
 
 - [x] Fulfill-tx URL captured (vault id=4) and filled in BUILDER-SUBMISSION.md → commit `8e6c7ea`
-- [ ] Record demo video per VIDEO-PLAN-FINAL.md (≤3:00, **real-person pitch + real human voice — no TTS**, webcam bookend in segment 1 + 6)
+- [ ] Record demo video per VIDEO-PLAN-FINAL.md (≤3:00, **screencast + real human voice — no TTS, no AI-generated video**; webcam NOT required — Zama only forbids AI generation)
 - [ ] Upload video to YouTube **unlisted** (NOT Private)
 - [ ] Fill `[PASTE YOUTUBE LINK]` in BOUNTY-SUBMISSION.md AND BUILDER-SUBMISSION.md
 - [ ] Fill `[PASTE WALLET ADDRESS]` in both
