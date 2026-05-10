@@ -74,6 +74,29 @@ export default function Page() {
   }, [append]);
 
   useEffect(() => {
+    // Silent re-hydrate on page load: if the wallet still has us in its
+    // permissioned-sites list, eth_accounts returns the address without a
+    // popup. eth_requestAccounts (used by Connect) would always prompt.
+    if (!window.ethereum) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const provider = new BrowserProvider(window.ethereum!);
+        const accounts = (await provider.send("eth_accounts", [])) as string[];
+        if (cancelled || accounts.length === 0) return;
+        const net = await provider.getNetwork();
+        setAccount(accounts[0]);
+        setChainId(net.chainId);
+      } catch {
+        /* no prior connection — stay disconnected */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
     // EIP-1193 events live on the provider but ethers' Eip1193Provider type
     // doesn't model them. MetaMask + every other injected wallet implements them.
     const eth = window.ethereum as unknown as
