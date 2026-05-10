@@ -363,12 +363,26 @@ button.ghost-btn.neutral:hover:not(:disabled) {
    "set aside", but keep the action buttons (esp. Restore) at full strength
    so the user can act on the row. opacity on the wrapper would mute the
    button alpha, which is exactly what we want to avoid. */
-.vault-row-dismissed { background: #0a0c10; }
+.vault-row-dismissed { background: #0a0c10; border-color: rgba(255, 255, 255, 0.10); }
 .vault-row-dismissed .kv,
 .vault-row-dismissed > p.hint,
 .vault-row-dismissed .row > p.hint { color: rgba(232, 236, 243, 0.40); }
 .vault-row-dismissed .kv dt { color: rgba(138, 147, 166, 0.55); }
-.vault-row-dismissed .pill { opacity: 0.55; }
+.vault-row-dismissed .kv .pill { opacity: 0.55; }
+
+.vault-dismissed-badge {
+  margin-right: auto;
+  align-self: center;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: rgba(138, 147, 166, 0.15);
+  color: var(--muted);
+  font-family: var(--mono);
+}
+
 .vault-actions {
   display: flex;
   gap: 8px;

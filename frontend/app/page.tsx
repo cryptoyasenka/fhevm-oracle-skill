@@ -748,7 +748,7 @@ export default function Page() {
                 Your vaults
                 <span className="pill">{shownCount}</span>
                 <span
-                  className={showHidden ? "pill live" : "pill ok"}
+                  className={showHidden ? "pill" : "pill ok"}
                   title={
                     showHidden
                       ? "Showing every vault on this account, including the ones you dismissed (those appear dimmed)."
@@ -822,11 +822,6 @@ export default function Page() {
                       ) : (
                         <span className="pill">locked</span>
                       )}
-                      {isHidden && (
-                        <span className="pill" style={{ marginLeft: 6 }}>
-                          dismissed
-                        </span>
-                      )}
                     </dd>
                     {v.revealed && (
                       <>
@@ -842,6 +837,11 @@ export default function Page() {
                     )}
                   </dl>
                   <div className="vault-actions">
+                    {isHidden && (
+                      <span className="vault-dismissed-badge" aria-label="this vault is dismissed">
+                        dismissed
+                      </span>
+                    )}
                     {!v.revealed && (
                       <>
                         <span className="action-pair">
