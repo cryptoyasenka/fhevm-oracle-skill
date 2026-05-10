@@ -13,6 +13,12 @@
 
 * { box-sizing: border-box; }
 
+html {
+  scroll-behavior: smooth;
+  /* Anchor jumps land below the sticky nav instead of behind it. */
+  scroll-padding-top: 72px;
+}
+
 html, body {
   margin: 0;
   padding: 0;
@@ -27,7 +33,68 @@ a:hover { text-decoration: underline; }
 main {
   max-width: 920px;
   margin: 0 auto;
-  padding: 48px 24px 96px;
+  padding: 32px 24px 96px;
+}
+
+/* ---------- Top nav ---------- */
+
+nav.topnav {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: rgba(11, 13, 18, 0.85);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--border);
+}
+.topnav-inner {
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 14px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.topnav-brand {
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--fg);
+  text-decoration: none;
+  font-size: 15px;
+  white-space: nowrap;
+}
+.topnav-brand:hover { color: var(--accent); text-decoration: none; }
+.topnav-links {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  font-size: 14px;
+  flex: 1;
+  justify-content: center;
+}
+.topnav-links a {
+  color: var(--muted);
+  text-decoration: none;
+  transition: color 0.12s;
+}
+.topnav-links a:hover { color: var(--fg); text-decoration: none; }
+.topnav-github {
+  font-family: var(--mono);
+  font-size: 12px;
+  padding: 6px 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--fg);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: border-color 0.12s, color 0.12s;
+}
+.topnav-github:hover { border-color: var(--accent); color: var(--accent); text-decoration: none; }
+
+@media (max-width: 640px) {
+  .topnav-links { display: none; }
+  .topnav-inner { padding: 12px 16px; }
 }
 
 /* ---------- Hero ---------- */

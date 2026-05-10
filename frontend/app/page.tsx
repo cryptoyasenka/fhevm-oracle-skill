@@ -367,8 +367,29 @@ export default function Page() {
   );
 
   return (
+    <>
+      <nav className="topnav">
+        <div className="topnav-inner">
+          <a href="#top" className="topnav-brand">AsyncRevealVault</a>
+          <div className="topnav-links">
+            <a href="#usecases">Use cases</a>
+            <a href="#how">How it works</a>
+            <a href="#try">Try it</a>
+            <a href="#vaults">Your vaults</a>
+            <a href="#log">Activity log</a>
+          </div>
+          <a
+            className="topnav-github"
+            href="https://github.com/cryptoyasenka/fhevm-oracle-skill"
+            target="_blank"
+            rel="noreferrer"
+          >
+            GitHub →
+          </a>
+        </div>
+      </nav>
     <main>
-      <header className="hero">
+      <header className="hero" id="top">
         <div className="hero-text">
           <span className="pill live">FHEVM · Sepolia testnet</span>
           <h1>Lock a number on-chain that nobody can read — until your timer expires.</h1>
@@ -405,7 +426,7 @@ export default function Page() {
         </div>
       </header>
 
-      <section className="card">
+      <section className="card" id="usecases">
         <h2>What you can build with this</h2>
         <div className="usecases">
           <div>
@@ -441,7 +462,7 @@ export default function Page() {
         </div>
       </section>
 
-      <section className="card">
+      <section className="card" id="how">
         <h2>How it works in 4 steps</h2>
         <ol className="steps">
           <li>
@@ -480,7 +501,7 @@ export default function Page() {
         </ol>
       </section>
 
-      <section className="card">
+      <section className="card" id="try">
         <h2>Try it{vaultConfigured ? "" : " — preview"}</h2>
         <p className="callout">
           <strong>Role-play: a sealed-bid auction.</strong> Pretend you&apos;re a bidder.
@@ -554,7 +575,7 @@ export default function Page() {
       </section>
 
       {vaultConfigured && account && onSepolia && (
-        <section className="card">
+        <section className="card" id="vaults">
           {(() => {
             const visibleCount = vaults.filter((v) => !hidden.has(String(v.id))).length;
             const hiddenCount = vaults.length - visibleCount;
@@ -727,7 +748,7 @@ export default function Page() {
         </section>
       )}
 
-      <section className="card">
+      <section className="card" id="log">
         <h2>Activity log</h2>
         <pre className="log">{log.length === 0 ? "Nothing yet. Connect a wallet and lock a value to see the round-trip." : log.join("\n")}</pre>
       </section>
@@ -754,5 +775,6 @@ export default function Page() {
         )}
       </footer>
     </main>
+    </>
   );
 }
