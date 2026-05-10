@@ -449,7 +449,7 @@ export default function Page() {
               <p className="hint">Try 60 to see the full round-trip in a minute.</p>
             </div>
             <button onClick={lock} disabled={status === "busy"}>
-              Steps 1 + 2 — Encrypt + lock
+              Encrypt and lock
             </button>
           </div>
         )}
@@ -508,7 +508,7 @@ export default function Page() {
                                 : undefined
                           }
                         >
-                          3. Trigger
+                          Trigger
                         </button>
                         <button
                           disabled={!canFulfill || status === "busy"}
@@ -521,7 +521,7 @@ export default function Page() {
                                 : undefined
                           }
                         >
-                          4. Fulfill
+                          Fulfill
                         </button>
                       </>
                     )}
