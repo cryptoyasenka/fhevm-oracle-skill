@@ -922,7 +922,7 @@ export default function Page() {
 
       <section className="card" id="log">
         <h2>Activity log</h2>
-        <pre className="log">{log.length === 0 ? "Nothing yet. Connect a wallet and lock a value to see the round-trip." : log.join("\n")}</pre>
+        <pre className="log">{log.length > 0 ? log.join("\n") : !account ? "Nothing yet. Connect a wallet and lock a value to see the round-trip." : !onSepolia ? `Connected as ${account.slice(0, 6)}…${account.slice(-4)} — switch to Sepolia to start locking.` : `Connected as ${account.slice(0, 6)}…${account.slice(-4)} on Sepolia. Lock a value above to see the round-trip.`}</pre>
       </section>
 
       <footer>
