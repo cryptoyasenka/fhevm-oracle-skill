@@ -10,14 +10,14 @@ import type { AsyncRevealVault } from "../types";
  * `requestDecryption` oracle — public decryption is driven by
  * `FHE.makePubliclyDecryptable(handle)` plus a separate caller-supplied
  * `fulfillReveal(cleartexts, proof)` callback. The mock plugin gives us
- * `hre.fhevm.debugger.createDecryptionSignatures` to forge the KMS proof
- * inside the test.
+ * `hre.fhevm.publicDecrypt(handles)` (used in `buildKmsProof` below) to
+ * forge the (cleartexts, proof) pair the KMS would produce.
  *
  * Each `it` drills one SKILL.md anti-pattern from a USER perspective:
  *   - "rejects reveal before time"        — AP-010 strict `>` finality
  *   - "decrypts after revealAt"           — canonical happy path (TRIGGER → FULFILL)
  *   - "rejects double fulfillReveal"      — AP-002 replay guard before any write
- *   - "rejects fulfillReveal without sig" — AP-001 checkSignatures FIRST
+ *   - "rejects fulfillReveal without sig" — AP-001 checkSignatures gates state writes
  */
 describe("AsyncRevealVault", function () {
   let depositor: HardhatEthersSigner;
@@ -157,7 +157,7 @@ describe("AsyncRevealVault", function () {
 
   // ----------------------------------------------------------------------
   // AP-001: only KMS-signed cleartexts pass. A direct call with an empty /
-  // forged proof must revert at FHE.checkSignatures, BEFORE any state read.
+  // forged proof must revert at FHE.checkSignatures, before any state write.
   // ----------------------------------------------------------------------
   it("rejects fulfillReveal with no valid signatures (AP-001)", async function () {
     const { vaultId, revealAt } = await lockVault(1_000);

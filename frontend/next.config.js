@@ -1,7 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // standalone output keeps the deploy footprint small on Railway / Cloudflare
-  // Workers Containers / any docker host. NOT vercel-specific.
+  // standalone output keeps the deploy footprint small and host-agnostic —
+  // works on Vercel (current host), Railway, Cloudflare Workers Containers,
+  // or any docker host that can run `node server.js`.
   output: "standalone",
   reactStrictMode: true,
   webpack: (config) => {

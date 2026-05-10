@@ -126,8 +126,11 @@ contract AsyncRevealVault is ZamaEthereumConfig {
     ///         handles — anyone can call this, but only with a real KMS proof.
     ///
     ///         Anti-patterns drilled here:
-    ///         - AP-001: `FHE.checkSignatures` is the FIRST line — without it, anyone
-    ///                   could submit arbitrary cleartext.
+    ///         - AP-001: `FHE.checkSignatures` runs BEFORE any state write or cleartext
+    ///                   use — without it, anyone could submit arbitrary cleartext.
+    ///                   (Three cheap input-validity reverts sit above it; they touch
+    ///                   no cleartext and mutate nothing, so gating them on the proof
+    ///                   would just waste gas on bad inputs.)
     ///         - AP-002: `revealed = true` consumed BEFORE state writes for the same
     ///                   reason a checks-effects-interactions pattern matters.
     ///         - AP-003: handles[] order MUST match the abi.decode tuple order. A swap
