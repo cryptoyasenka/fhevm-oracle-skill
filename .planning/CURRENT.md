@@ -1,6 +1,49 @@
 # CURRENT — fhevm-oracle-skill
 
-**Last touched:** 2026-05-10 (master video plan + submission walkthrough committed)
+**Last touched:** 2026-05-10 evening (session paused before recording Clip 1)
+
+## ⚡ ВОЗВРАЩЕНИЕ К РАБОТЕ — ЧИТАЙ ЭТО ПЕРВЫМ
+
+**Дедлайн:** 2026-05-11, 14:59 Киев (= 11:59 UTC, = 23:59 AOE). Будильник ставь на 13:00 Киев = за 2 часа.
+
+**Где остановилась:** Yana только что научилась пользоваться Win+G (Win+Alt+R = стоп). Тестовая запись лежит в `C:\Users\Yana\Videos\Captures\` (имя длинное `Untitled (Workspace) - Antigravity - VIDEO-PLAN-FINAL.md ...mp4` — это пробная, не финал). Готова записывать **Клип 1 (Hook)** по реальному плану.
+
+**Главный playbook:** `C:/Projects/fhevm-oracle-skill/.planning/VIDEO-PLAN-FINAL.md` — открой и иди СВЕРХУ ВНИЗ. Там разделы:
+- 0 = правила конкурса (verified)
+- 1 = подготовка (Win+G, шрифты, MetaMask) — короткая, 5 мин
+- **2 = запись 6 клипов по очереди** ← вот сюда возвращаешься
+- 3 = troubleshooting
+- 4 = монтаж в CapCut
+- 5 = загрузка YouTube Unlisted
+- 6 = сабмит Bounty формы
+- 7 = сабмит Builder формы
+- 8 = финальный чек-лист
+
+**Следующий шаг конкретно:** записать **Клип 1 (Hook)** = 22 сек, открыть `C:\Projects\fhevm-oracle-skill\slides\01-title.png` на полный экран (F11), Win+G → красный кружок → прочитать voice-over (текст в плане, раздел 2 → «🎬 КЛИП 1»), Win+Alt+R = стоп. Файл сохранится в `C:\Users\Yana\Videos\Captures\`. Переименовать в `clip1-hook.mp4`. Затем Клип 2, 3, 4, 5, 6 — каждый описан пошагово в плане.
+
+**Ключевые факты:**
+- Веб-камера НЕ нужна. Голос ТВОЙ живой (не TTS). Видео ≤3:00 ровно.
+- YouTube **Unlisted** (не Private! не Public!).
+- Wallet address одинаковый в Bounty и Builder.
+- Tx URL для Builder уже стоит (vault id=4 fulfilled).
+- BOUNTY-SUBMISSION.md и BUILDER-SUBMISSION.md ждут только: YouTube link + wallet address.
+
+**Где какие файлы:**
+- Слайды: `C:/Projects/fhevm-oracle-skill/slides/*.png` (9 штук, 01-06 = main, 07-09 = optional callouts которые можно пропустить)
+- Запись экрана: Win+G сохраняет в `C:/Users/Yana/Videos/Captures/`
+- Текст voice-over: внутри VIDEO-PLAN-FINAL.md под каждым клипом
+- Submission MD-файлы: `BOUNTY-SUBMISSION.md` + `BUILDER-SUBMISSION.md` в корне репо
+- Контракт на Sepolia: `0x256e8948057982D483C60F7c060E3253a4d6A49b`
+- Frontend: https://fhevm-oracle-frontend.vercel.app
+
+**Антипаника:**
+- Запутаешься на каком-то клипе → переснимаешь только его. Остальные не трогаешь.
+- Win+G пишет ТО окно которое было активным при нажатии Record. Кликни в нужное окно ПЕРЕД Win+G.
+- KMS callback в Клипе 5 залип >2 мин → используешь готовую tx на Etherscan: `0xbb66e334506b7f7dcfe68b3f33e30d76f5d778396556553ea0df042091209c70`
+
+---
+
+
 **Status:** Four audit passes complete. First (`576a6bf`): purged fictional APIs in submissions. Second (`155aa50`+`7b773c2`): fixed BUILDER "FIRST line" wording, frontend/README AP-NNN table, stale Vercel directive. Third (`be77687`): contract NatSpec @dev block "FIRST line" → "BEFORE any state write" with parenthetical (matched the inline comment), test docstring `debugger.createDecryptionSignatures` → `publicDecrypt` (matched the real API), `next.config.js` + `.env.example` "NOT vercel-specific" → host-agnostic phrasing. Fourth (`2d76979`): VIDEO-VOICEOVER segment 3, VIDEO-INSTRUCTIONS line 50, `scripts/gen_slides.py` strings + regenerated `slides/03-safety.png` and `slides/07-callout-checksig.png` — all rewordings now match contract NatSpec exactly so judge cross-referencing video to contract sees zero contradiction. SKILL.md prescriptive "FIRST" left intact (it's the teaching abstraction, contract honors it in spirit). 4/4 tests still pass.
 
 ## Status
