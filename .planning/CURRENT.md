@@ -1,7 +1,7 @@
 # CURRENT — fhevm-oracle-skill
 
-**Last touched:** 2026-05-10 (afternoon — Connect-button resilience fix after Yana reported clicks doing nothing)
-**Status:** UX polish + Connect fix pushed. Live verified: Vercel deploy is current (afacaa9 → now 65b9694), no JS errors, Connect button rendered in hero + Try-it. Suspect: MetaMask popup blocked / wallet locked → eth_requestAccounts hung → button stuck disabled. Hardened with 20s timeout + visible "Connecting…" label + 4001 user-reject handling. Awaiting Yana to hard-refresh and retry.
+**Last touched:** 2026-05-10 (deep audit pass — pre-submission code & doc sweep)
+**Status:** Deep audit complete. 7-step review of contract, SKILL.md, package pins, README, hardhat config, tests, and both submission docs. Found + fixed fictional-API leftovers in BOUNTY-SUBMISSION.md (`requestDecryption`, `awaitDecryptionOracle`, 2-arg `checkSignatures`, unverified OZ ref) and one in BUILDER-SUBMISSION.md (`FHE.requestDecryption call`). Contract NatSpec also tightened (AP-001 wording). All clean.
 
 ## Status
 
@@ -42,7 +42,17 @@
 - [ ] Submit both forms before 2026-05-11 11:59 UTC
 
 ## Open files
-- Nothing in active edit. All work committed and pushed through `609ee01` + this CURRENT.md update.
+- Nothing in active edit. All work committed and pushed through `576a6bf` + this CURRENT.md update.
+
+## Deep-audit pass (2026-05-10) — all 7 steps clean
+
+1. **`contracts/AsyncRevealVault.sol`** — clean. AP-001 NatSpec tightened (`e31f2bb`): clarified that `checkSignatures` runs BEFORE any state write/cleartext use (not literally first line — 3 cheap reverts precede it).
+2. **`SKILL.md`** — read 434 lines end-to-end. All 10 AP code examples + 3-step skeleton + decision tree + frontmatter pins verbatim correct.
+3. **`package.json`** — pin parity with SKILL.md frontmatter confirmed: `@fhevm/solidity ^0.11.1`, `@fhevm/hardhat-plugin ^0.4.2`, `@zama-fhe/relayer-sdk ^0.4.1`, hardhat ^2.28.6, ethers ^6.16.0, solidity 0.8.27, evm cancun, node ≥20.
+4. **`README.md`** — clean. Repo tree, 5-failure list, live links, stack — all correct after `8e24442`+`6e8da4d`. `FHE.checkSignatures(handles, abiEncodedCleartexts, decryptionProof)` 3-arg form correct.
+5. **`hardhat.config.ts`** — clean. All secrets via `vars.get(KEY, default)`, public RPC fallback, no hardcoded keys, `bytecodeHash: none` for reproducibility.
+6. **`test/AsyncRevealVault.ts`** — clean. 4 mock-mode cases drilling AP-010, canonical happy path, AP-002 replay, AP-001 sig absence. Real ciphertexts via `fhevm.createEncryptedInput.add64.add256.encrypt`. Real KMS proof via `fhevm.publicDecrypt(handles)`.
+7. **Submissions** — fictional APIs purged (`576a6bf`). BOUNTY now uses `makePubliclyDecryptable`/`publicDecrypt`/3-arg `checkSignatures` consistently; BUILDER long description rewritten to match real flow.
 
 ## UX commits today (after morning hardening)
 - `c7122e1` UX audit (9 issues), `30b1af2` wallet pill in navbar, `6120af5` activity-log empty state, `bab4372` Restore button visible, `95027bd` button cluster, `11556fe` Showing-all pill + dismissed badge, `1894a20` simplify vaults header, `609ee01` Connect button in navbar (REVERTED), `afacaa9` move Connect from navbar to Try-it section, `65b9694` Connect resilience (20s timeout + Connecting label + 4001 handling).
@@ -51,9 +61,14 @@
 - Yana said earlier "поле трай ит снова непонятным и перегруженным" — clarification asked but not answered. May resurface after Connect-button feedback. Try-it section has role-play callout + primitive hint + 3 inputs each with label + ?-tooltip + always-on hint — candidates for compaction.
 
 ## Next step (concrete)
-1. Wait Yana's reaction to navbar Connect (`609ee01`).
-2. If Try-it still flagged, simplify it (drop role-play callout + primitive hint, hide OK-state hints).
-3. Then she runs manual demo: hide id=2,3,4 → Trigger/Fulfill id=1 → fulfill-tx URL → fill BUILDER-SUBMISSION.md → record video → submit forms before 2026-05-11 11:59 UTC.
+Submission code + docs are clean. Yana's manual run:
+1. Hide vault id=2,3 in UI (one click each).
+2. Trigger + Fulfill vault id=1 → grab fulfill-tx Etherscan URL.
+3. Fill `BUILDER-SUBMISSION.md` placeholders: fulfill-tx URL, video URL, prize wallet.
+4. Fill `BOUNTY-SUBMISSION.md` placeholders: video URL, prize wallet.
+5. Record 3-min LIVE VOICE demo via `.planning/VIDEO-VOICEOVER.md` + `.planning/VIDEO-INSTRUCTIONS-2026-05-10.md` slide pack.
+6. Upload video to YouTube **unlisted** → paste URL into both submission MDs.
+7. Submit Bounty + Builder forms before 2026-05-11 11:59 UTC.
 
 ## Decisions / constraints
 - Skill scope = NARROW oracle specialist (complementary to Makabeez/fhevm-skill)
@@ -81,6 +96,13 @@
 - FHECounter on Etherscan: https://sepolia.etherscan.io/address/0x839A250cC9E5a55C35EB8b47e3E9f0B42d7ad912
 
 ## Commits on `main` (latest first)
+- `576a6bf` — docs(submissions): purge fictional async-decryption API references
+- `e31f2bb` — docs(contract): tighten AP-001 NatSpec
+- `6e8da4d` — chore: drop stale VIDEO-SCRIPT.md
+- `bf3507f` — copy: clarify domain-neutrality + mainnet-readiness
+- `f58aa3a` — chore: CURRENT.md update
+- `65b9694` — fix: Connect button resilience (20s timeout)
+- `afacaa9` — ui: move Connect from navbar to Try-it section
 - `a5d3aac` — fix(frontend): wallet RPC compat — block-range cap + EIP-55 address normalize
 - `3145085` — ui: fill use-cases grid with two more primitives (DAO votes, embargoed disclosures)
 - `7dd31b4` — feat(frontend): persist wallet connection across page reloads
