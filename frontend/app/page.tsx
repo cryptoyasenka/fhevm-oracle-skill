@@ -325,6 +325,16 @@ export default function Page() {
             <p>Multi-party seed commitment with a single shared reveal slot. Verifiable
             fairness, no MEV-able ordering.</p>
           </div>
+          <div>
+            <h3>Encrypted DAO votes</h3>
+            <p>Voters submit ciphertext ballots during the window; tallies reveal only
+            after it closes. Kills momentum-based vote manipulation.</p>
+          </div>
+          <div>
+            <h3>Embargoed disclosures</h3>
+            <p>Bug reports, security advisories, or press releases stay sealed on-chain
+            until the agreed embargo lifts. No leaks, no manual handoff.</p>
+          </div>
         </div>
       </section>
 
