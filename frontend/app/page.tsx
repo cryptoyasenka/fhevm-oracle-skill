@@ -28,6 +28,11 @@ export default function Page() {
   const [amount, setAmount] = useState("12345");
   const [secret, setSecret] = useState("0xc0ffee");
   const [delaySec, setDelaySec] = useState("60");
+  // Local-only "hide from dashboard" — vaults are immutable on-chain, but the
+  // UI can keep a per-browser list of ids the user has dismissed. Persisted to
+  // localStorage so it survives reloads. Lazy init to avoid SSR window access.
+  const [hidden, setHidden] = useState<Set<string>>(() => new Set());
+  const [showHidden, setShowHidden] = useState(false);
   // Synchronous click guard. setStatus("busy") schedules a render — between
   // the click handler and the next render, a fast double-click can fire lock()
   // twice, both pop a MetaMask confirmation, and you end up with two vaults
@@ -79,6 +84,37 @@ export default function Page() {
       /* unsupported wallet — local disconnect is sufficient */
     }
   }, [append]);
+
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem("fhevm-vault-hidden");
+      if (stored) setHidden(new Set(JSON.parse(stored) as string[]));
+    } catch {
+      /* localStorage unavailable / bad JSON — start fresh */
+    }
+  }, []);
+
+  const persistHidden = useCallback((next: Set<string>) => {
+    try {
+      localStorage.setItem("fhevm-vault-hidden", JSON.stringify([...next]));
+    } catch {
+      /* quota / private mode — in-memory only */
+    }
+  }, []);
+
+  const toggleHidden = useCallback(
+    (id: bigint) => {
+      setHidden((prev) => {
+        const next = new Set(prev);
+        const k = String(id);
+        if (next.has(k)) next.delete(k);
+        else next.add(k);
+        persistHidden(next);
+        return next;
+      });
+    },
+    [persistHidden],
+  );
 
   useEffect(() => {
     // Silent re-hydrate on page load: if the wallet still has us in its
@@ -512,12 +548,29 @@ export default function Page() {
       {vaultConfigured && account && onSepolia && (
         <section className="card">
           <h2>
-            Your vaults <span className="pill">{vaults.length}</span>
+            Your vaults{" "}
+            <span className="pill">
+              {vaults.filter((v) => showHidden || !hidden.has(String(v.id))).length}
+            </span>
+            {vaults.some((v) => hidden.has(String(v.id))) && (
+              <button
+                onClick={() => setShowHidden((s) => !s)}
+                className="ghost-btn"
+                style={{ marginLeft: 12 }}
+                title="Toggle the vaults you've dismissed"
+              >
+                {showHidden
+                  ? "hide dismissed"
+                  : `show ${vaults.filter((v) => hidden.has(String(v.id))).length} hidden`}
+              </button>
+            )}
           </h2>
           {vaults.length === 0 && (
             <p className="lede">No vaults yet for this account on Sepolia.</p>
           )}
-          {vaults.map((v) => {
+          {vaults
+            .filter((v) => showHidden || !hidden.has(String(v.id)))
+            .map((v) => {
             const now = Math.floor(Date.now() / 1000);
             const ready = now > v.revealAt;
             const canTrigger = ready && !v.triggered && !v.revealed;
@@ -552,7 +605,6 @@ export default function Page() {
                       <>
                         <span className="action-pair">
                           <button
-                            className="secondary"
                             disabled={!canTrigger || status === "busy"}
                             onClick={() => trigger(v.id)}
                           >
@@ -577,6 +629,18 @@ export default function Page() {
                         </span>
                       </>
                     )}
+                    <button
+                      onClick={() => toggleHidden(v.id)}
+                      className="ghost-btn"
+                      title={
+                        hidden.has(String(v.id))
+                          ? "Restore this vault to the visible list"
+                          : "Hide this vault from the dashboard. The vault stays on-chain — this only affects your local view."
+                      }
+                      style={{ marginLeft: "auto" }}
+                    >
+                      {hidden.has(String(v.id)) ? "↺ Restore" : "✕ Hide"}
+                    </button>
                   </div>
                 </div>
                 {!v.revealed && (
