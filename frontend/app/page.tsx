@@ -42,9 +42,48 @@ export default function Page() {
   // 1-second tick so locked → "timer up" transitions, countdown text, and the
   // canTrigger gate update without the user having to refresh or interact.
   const [now, setNow] = useState(() => Math.floor(Date.now() / 1000));
+  // Inline status near the active button — Activity log is at the bottom of
+  // the page, too far for a user mid-click to follow what's happening.
+  const [progressMsg, setProgressMsg] = useState<string>("");
+  // Which vault row owns the current trigger/fulfill — so we can show the
+  // progress message inline in that row's hint paragraph.
+  const [actingVaultId, setActingVaultId] = useState<bigint | null>(null);
+  // Refresh has its own busy flag so the chain-read button can be disabled
+  // independently of the lock/trigger/fulfill global "busy" gate.
+  const [refreshing, setRefreshing] = useState(false);
+  const refreshInFlight = useRef(false);
 
   const onSepolia = chainId === SEPOLIA_CHAIN_ID;
   const vaultConfigured = !!VAULT_ADDRESS && VAULT_ADDRESS !== ethers.ZeroAddress;
+
+  // Input validation — every field must parse cleanly before we'll accept a
+  // lock(). Without this, BigInt() throws inside the click handler and the
+  // only sign of failure is a line in the activity log at the bottom.
+  const amountValid = useMemo(() => {
+    const t = amount.trim();
+    if (!/^\d+$/.test(t)) return false;
+    try {
+      const v = BigInt(t);
+      return v >= 0n && v < (1n << 64n);
+    } catch {
+      return false;
+    }
+  }, [amount]);
+  const secretValid = useMemo(() => {
+    const t = secret.trim();
+    if (t === "") return false;
+    try {
+      const v = BigInt(t);
+      return v >= 0n && v < (1n << 256n);
+    } catch {
+      return false;
+    }
+  }, [secret]);
+  const delaySecValid = useMemo(() => {
+    const t = delaySec.trim();
+    return /^\d+$/.test(t) && Number(t) > 0;
+  }, [delaySec]);
+  const inputsValid = amountValid && secretValid && delaySecValid;
 
   const append = useCallback((line: string) => {
     setLog((l) => [...l.slice(-50), `[${new Date().toLocaleTimeString()}] ${line}`]);
@@ -194,6 +233,9 @@ export default function Page() {
 
   const refreshVaults = useCallback(async () => {
     if (!account || !vaultConfigured || !window.ethereum) return;
+    if (refreshInFlight.current) return;
+    refreshInFlight.current = true;
+    setRefreshing(true);
     try {
       const provider = new BrowserProvider(window.ethereum);
       const vault = new Contract(VAULT_ADDRESS!, VAULT_ABI, provider);
@@ -250,6 +292,9 @@ export default function Page() {
       setVaults(list);
     } catch (e) {
       append(`Refresh failed: ${(e as Error).message}`);
+    } finally {
+      refreshInFlight.current = false;
+      setRefreshing(false);
     }
   }, [account, vaultConfigured, append]);
 
@@ -264,9 +309,11 @@ export default function Page() {
 
   const lock = useCallback(async () => {
     if (!vaultConfigured || !account) return;
+    if (!inputsValid) return;
     if (inFlight.current) return;
     inFlight.current = true;
     setStatus("busy");
+    setProgressMsg("Encrypting in your browser…");
     try {
       append(`Encrypting amount=${amount}, secret=${secret}…`);
       const provider = new BrowserProvider(window.ethereum!);
@@ -283,11 +330,13 @@ export default function Page() {
       input.add256(BigInt(secret));
       const enc = await input.encrypt();
       append("Ciphertexts ready, submitting lock()…");
+      setProgressMsg("Confirm lock() in MetaMask…");
 
       const revealAt = Math.floor(Date.now() / 1000) + Number(delaySec || "60");
       const vault = new Contract(VAULT_ADDRESS!, VAULT_ABI, signer);
       const tx = await vault.lock(enc.handles[0], enc.handles[1], enc.inputProof, revealAt);
       append(`tx: ${tx.hash}`);
+      setProgressMsg("Waiting for Sepolia to confirm…");
       await tx.wait();
       append(`Locked. Reveal at ${new Date(revealAt * 1000).toLocaleString()}`);
       await refreshVaults();
@@ -295,21 +344,25 @@ export default function Page() {
       append(`Lock failed: ${(e as Error).message}`);
     } finally {
       setStatus("idle");
+      setProgressMsg("");
       inFlight.current = false;
     }
-  }, [account, amount, secret, delaySec, vaultConfigured, append, refreshVaults]);
+  }, [account, amount, secret, delaySec, vaultConfigured, inputsValid, append, refreshVaults]);
 
   const trigger = useCallback(
     async (id: bigint) => {
       if (inFlight.current) return;
       inFlight.current = true;
       setStatus("busy");
+      setActingVaultId(id);
+      setProgressMsg("Confirm triggerReveal() in MetaMask…");
       try {
         const provider = new BrowserProvider(window.ethereum!);
         const signer = await provider.getSigner();
         const vault = new Contract(VAULT_ADDRESS!, VAULT_ABI, signer);
         append(`triggerReveal(${id})…`);
         const tx = await vault.triggerReveal(id);
+        setProgressMsg("Waiting for Sepolia to confirm…");
         await tx.wait();
         append(`Triggered. Now press Fulfill to fetch the KMS proof and write the cleartext on-chain.`);
         await refreshVaults();
@@ -323,6 +376,8 @@ export default function Page() {
         append(`Trigger failed: ${(e as Error).message}`);
       } finally {
         setStatus("idle");
+        setProgressMsg("");
+        setActingVaultId(null);
         inFlight.current = false;
       }
     },
@@ -334,6 +389,8 @@ export default function Page() {
       if (inFlight.current) return;
       inFlight.current = true;
       setStatus("busy");
+      setActingVaultId(id);
+      setProgressMsg("Asking Zama's decryption network for the cleartext…");
       try {
         const provider = new BrowserProvider(window.ethereum!);
         const signer = await provider.getSigner();
@@ -347,7 +404,9 @@ export default function Page() {
         const fhevm = await getFhevm();
         const result = await fhevm.publicDecrypt(handles);
         append("Submitting fulfillReveal()…");
+        setProgressMsg("Confirm fulfillReveal() in MetaMask…");
         const tx = await vault.fulfillReveal(id, result.abiEncodedClearValues, result.decryptionProof);
+        setProgressMsg("Waiting for Sepolia to confirm…");
         await tx.wait();
         append(`Revealed.`);
         await refreshVaults();
@@ -355,6 +414,8 @@ export default function Page() {
         append(`Fulfill failed: ${(e as Error).message}`);
       } finally {
         setStatus("idle");
+        setProgressMsg("");
+        setActingVaultId(null);
         inFlight.current = false;
       }
     },
@@ -404,7 +465,17 @@ export default function Page() {
         </div>
         <div className="hero-actions">
           {!account ? (
-            <button onClick={connect} disabled={status === "busy"}>Connect wallet</button>
+            <>
+              <button onClick={connect} disabled={status === "busy"}>Connect wallet</button>
+              <p className="hint" style={{ marginTop: 0 }}>
+                Needs MetaMask (or any EIP-1193 wallet) + a small amount of Sepolia
+                testnet ETH. Grab some free at{" "}
+                <a href="https://sepoliafaucet.com" target="_blank" rel="noreferrer">
+                  sepoliafaucet.com
+                </a>
+                .
+              </p>
+            </>
           ) : !onSepolia ? (
             <>
               <button onClick={switchToSepolia} className="secondary">Switch to Sepolia</button>
@@ -420,9 +491,6 @@ export default function Page() {
               </button>
             </>
           )}
-          <a className="ghost-link" href="https://github.com/cryptoyasenka/fhevm-oracle-skill" target="_blank" rel="noreferrer">
-            View source on GitHub →
-          </a>
         </div>
       </header>
 
@@ -542,8 +610,23 @@ export default function Page() {
                   title="The bid you'd place in this pretend auction. Any whole number up to 18 quintillion. It's encrypted right here in your browser before it ever leaves — even Ethereum validators only see scrambled bytes. The 12345 default is just a placeholder; change it to any number you want to seal."
                 >?</span>
               </label>
-              <input value={amount} onChange={(e) => setAmount(e.target.value)} />
-              <p className="hint">e.g. <code>12345</code> as a bid of $12,345. Encrypted as <code>euint64</code>.</p>
+              <input
+                type="number"
+                min="0"
+                step="1"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                style={!amountValid && amount !== "" ? { borderColor: "var(--danger)" } : undefined}
+              />
+              <p className="hint">
+                {!amountValid && amount !== "" ? (
+                  <span style={{ color: "var(--danger)" }}>
+                    Must be a whole non-negative number under 2⁶⁴.
+                  </span>
+                ) : (
+                  <>e.g. <code>12345</code> as a bid of $12,345. Encrypted as <code>euint64</code>.</>
+                )}
+              </p>
             </div>
             <div>
               <label>
@@ -553,8 +636,20 @@ export default function Page() {
                   title="A second piece of data sealed together with the bid — think of it as a tag on the envelope. Could be a bidder ID, a hash that links this bid to your identity, or a short private memo. Up to 32 bytes. Hex (0x…) or a decimal number both work. The 0xc0ffee default is just a memorable example."
                 >?</span>
               </label>
-              <input value={secret} onChange={(e) => setSecret(e.target.value)} />
-              <p className="hint">e.g. <code>0xc0ffee</code> as a bidder hash. Encrypted as <code>euint256</code>.</p>
+              <input
+                value={secret}
+                onChange={(e) => setSecret(e.target.value)}
+                style={!secretValid && secret !== "" ? { borderColor: "var(--danger)" } : undefined}
+              />
+              <p className="hint">
+                {!secretValid && secret !== "" ? (
+                  <span style={{ color: "var(--danger)" }}>
+                    Must be a number — decimal (e.g. <code>12345</code>) or hex (e.g. <code>0xc0ffee</code>), under 2²⁵⁶.
+                  </span>
+                ) : (
+                  <>e.g. <code>0xc0ffee</code> as a bidder hash. Encrypted as <code>euint256</code>.</>
+                )}
+              </p>
             </div>
             <div>
               <label>
@@ -564,23 +659,61 @@ export default function Page() {
                   title="Seconds until the auction 'closes'. The bid stays sealed for this long — no one can read it. Once the timer is up, anyone can run Trigger and then Fulfill to open it. 60 is the shortest value that lets you walk through the full lock → reveal round-trip in about a minute."
                 >?</span>
               </label>
-              <input value={delaySec} onChange={(e) => setDelaySec(e.target.value)} />
-              <p className="hint">Use 60 to see the full round-trip in a minute.</p>
+              <input
+                type="number"
+                min="1"
+                step="1"
+                value={delaySec}
+                onChange={(e) => setDelaySec(e.target.value)}
+                style={!delaySecValid && delaySec !== "" ? { borderColor: "var(--danger)" } : undefined}
+              />
+              <p className="hint">
+                {!delaySecValid && delaySec !== "" ? (
+                  <span style={{ color: "var(--danger)" }}>
+                    Must be a positive whole number of seconds.
+                  </span>
+                ) : (
+                  <>Use 60 to see the full round-trip in a minute.</>
+                )}
+              </p>
             </div>
-            <button onClick={lock} disabled={status === "busy"}>
-              Encrypt and lock
-            </button>
+            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+              <button onClick={lock} disabled={status === "busy" || !inputsValid}>
+                {status === "busy" && actingVaultId === null ? "Working…" : "Encrypt and lock"}
+              </button>
+              {status === "busy" && actingVaultId === null && progressMsg && (
+                <p className="hint" style={{ margin: 0, color: "var(--accent)" }}>
+                  ⏳ {progressMsg}
+                </p>
+              )}
+            </div>
           </div>
         )}
       </section>
 
-      {vaultConfigured && account && onSepolia && (
-        <section className="card" id="vaults">
-          {(() => {
-            const visibleCount = vaults.filter((v) => !hidden.has(String(v.id))).length;
-            const hiddenCount = vaults.length - visibleCount;
-            const shownCount = showHidden ? vaults.length : visibleCount;
-            return (
+      <section className="card" id="vaults">
+        {!vaultConfigured ? (
+          <>
+            <h2>Your vaults</h2>
+            <p className="lede">Vault contract isn&apos;t wired up for this deployment yet.</p>
+          </>
+        ) : !account ? (
+          <>
+            <h2>Your vaults</h2>
+            <p className="lede">Connect a wallet above to see the vaults you&apos;ve locked on this account.</p>
+          </>
+        ) : !onSepolia ? (
+          <>
+            <h2>Your vaults</h2>
+            <p className="lede">Switch to Sepolia to see your vaults.</p>
+          </>
+        ) : (() => {
+          const visible = vaults.filter((v) => showHidden || !hidden.has(String(v.id)));
+          const visibleNoHidden = vaults.filter((v) => !hidden.has(String(v.id)));
+          const hiddenCount = vaults.length - visibleNoHidden.length;
+          const shownCount = showHidden ? vaults.length : visibleNoHidden.length;
+          return (
+            <>
               <h2 style={{ display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center" }}>
                 Your vaults
                 <span className="pill">{shownCount}</span>
@@ -602,10 +735,10 @@ export default function Page() {
                 <button
                   onClick={refreshVaults}
                   className="ghost-btn neutral"
-                  disabled={status === "busy"}
+                  disabled={refreshing || status === "busy"}
                   title="Re-read the chain to pick up any vault state that changed since you last loaded the page."
                 >
-                  ↻ Refresh
+                  {refreshing ? "↻ Refreshing…" : "↻ Refresh"}
                 </button>
                 {hiddenCount > 0 && (
                   <button
@@ -621,14 +754,13 @@ export default function Page() {
                   </button>
                 )}
               </h2>
-            );
-          })()}
-          {vaults.length === 0 && (
-            <p className="lede">No vaults yet for this account on Sepolia.</p>
-          )}
-          {vaults
-            .filter((v) => showHidden || !hidden.has(String(v.id)))
-            .map((v) => {
+              {vaults.length === 0 && (
+                <p className="lede">No vaults yet for this account on Sepolia. Lock one above to see it appear here.</p>
+              )}
+              {vaults.length > 0 && visible.length === 0 && (
+                <p className="lede">All your vaults are dismissed. Press &quot;Show all&quot; above to bring them back.</p>
+              )}
+              {visible.map((v) => {
             const ready = now > v.revealAt;
             const canTrigger = ready && !v.triggered && !v.revealed;
             const canFulfill = ready && v.triggered && !v.revealed;
@@ -670,7 +802,13 @@ export default function Page() {
                     {v.revealed && (
                       <>
                         <dt>amount</dt><dd>{String(v.clearAmount)}</dd>
-                        <dt>secret</dt><dd>{"0x" + (v.clearSecret ?? 0n).toString(16)}</dd>
+                        <dt>secret</dt>
+                        <dd>
+                          0x{(v.clearSecret ?? 0n).toString(16)}
+                          <span style={{ color: "var(--muted)", marginLeft: 8 }}>
+                            (decimal: {String(v.clearSecret ?? 0n)})
+                          </span>
+                        </dd>
                       </>
                     )}
                   </dl>
@@ -719,7 +857,9 @@ export default function Page() {
                 </div>
                 {!v.revealed && (
                   <p className="hint" style={{ marginTop: 12 }}>
-                    {!ready ? (
+                    {actingVaultId === v.id && progressMsg ? (
+                      <span style={{ color: "var(--accent)" }}>⏳ {progressMsg}</span>
+                    ) : !ready ? (
                       <>
                         <strong>Sealed — {countdown} left.</strong> Your bid sits on-chain in
                         encrypted form. Nobody can read it — not even the contract — until{" "}
@@ -745,8 +885,10 @@ export default function Page() {
               </div>
             );
           })}
-        </section>
-      )}
+            </>
+          );
+        })()}
+      </section>
 
       <section className="card" id="log">
         <h2>Activity log</h2>
