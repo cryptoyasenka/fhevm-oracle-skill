@@ -114,20 +114,6 @@ button.ghost-btn.topnav-disconnect {
   align-items: center;
   justify-content: center;
 }
-button.topnav-connect {
-  font-size: 13px;
-  padding: 7px 14px;
-  min-width: 0;
-  background: var(--accent);
-  color: #1a1410;
-  border: 0;
-  border-radius: 8px;
-  font-family: var(--mono);
-  font-weight: 600;
-  cursor: pointer;
-}
-button.topnav-connect:hover:not(:disabled) { filter: brightness(1.05); }
-button.topnav-connect:disabled { opacity: 0.6; cursor: not-allowed; }
 
 @media (max-width: 640px) {
   .topnav-links { display: none; }

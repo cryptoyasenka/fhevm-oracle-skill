@@ -440,16 +440,7 @@ export default function Page() {
             <a href="#log">Activity log</a>
           </div>
           <div className="topnav-right">
-            {!account ? (
-              <button
-                onClick={connect}
-                disabled={status === "busy"}
-                className="topnav-connect"
-                title="Connect a wallet to start using the page."
-              >
-                Connect wallet
-              </button>
-            ) : (
+            {account && (
               <span className="topnav-wallet">
                 {!onSepolia ? (
                   <button
@@ -636,7 +627,14 @@ export default function Page() {
             project&apos;s GitHub repo (linked at the bottom of the page).
           </p>
         ) : !account ? (
-          <p className="lede">Connect a wallet to start. Need test ETH? <a href="https://sepoliafaucet.com" target="_blank" rel="noreferrer">sepoliafaucet.com</a>.</p>
+          <div style={{ display: "flex", flexDirection: "column", gap: 8, alignItems: "flex-start" }}>
+            <button onClick={connect} disabled={status === "busy"}>
+              {status === "busy" ? "Working…" : "Connect wallet"}
+            </button>
+            <p className="hint" style={{ margin: 0 }}>
+              Need test ETH? <a href="https://sepoliafaucet.com" target="_blank" rel="noreferrer">sepoliafaucet.com</a>.
+            </p>
+          </div>
         ) : !onSepolia ? (
           <p className="lede">Wrong network — switch to Sepolia (chain id 11155111).</p>
         ) : (
