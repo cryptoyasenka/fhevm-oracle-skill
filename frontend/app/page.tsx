@@ -518,7 +518,7 @@ export default function Page() {
                 Amount (your bid)
                 <span
                   className="info-icon"
-                  title="Your sealed bid in this make-believe auction. Any whole number up to 2⁶⁴-1 (≈18 quintillion). Stored on-chain as an opaque euint64 ciphertext — no one can read it until the timer expires. The 12345 default has no meaning, change it to anything."
+                  title="The bid you'd place in this pretend auction. Any whole number up to 18 quintillion. It's encrypted right here in your browser before it ever leaves — even Ethereum validators only see scrambled bytes. The 12345 default is just a placeholder; change it to any number you want to seal."
                 >?</span>
               </label>
               <input value={amount} onChange={(e) => setAmount(e.target.value)} />
@@ -529,7 +529,7 @@ export default function Page() {
                 Secret (note attached to bid)
                 <span
                   className="info-icon"
-                  title="A 32-byte payload sealed alongside the bid — could be a bidder ID, a hash linking the bid to you, a private message, anything. Hex (0x…) or decimal. Stored as euint256. The 0xc0ffee default is just a memorable hex value."
+                  title="A second piece of data sealed together with the bid — think of it as a tag on the envelope. Could be a bidder ID, a hash that links this bid to your identity, or a short private memo. Up to 32 bytes. Hex (0x…) or a decimal number both work. The 0xc0ffee default is just a memorable example."
                 >?</span>
               </label>
               <input value={secret} onChange={(e) => setSecret(e.target.value)} />
@@ -540,7 +540,7 @@ export default function Page() {
                 Reveal in (sec)
                 <span
                   className="info-icon"
-                  title="How long until the 'auction closes' and the bid can be revealed. After this many seconds you can press Trigger and then Fulfill to surface the cleartext on-chain. 60 is the smallest value that demos the full round-trip comfortably."
+                  title="Seconds until the auction 'closes'. The bid stays sealed for this long — no one can read it. Once the timer is up, anyone can run Trigger and then Fulfill to open it. 60 is the shortest value that lets you walk through the full lock → reveal round-trip in about a minute."
                 >?</span>
               </label>
               <input value={delaySec} onChange={(e) => setDelaySec(e.target.value)} />
@@ -565,7 +565,7 @@ export default function Page() {
               className="ghost-btn"
               style={{ marginLeft: 12 }}
               disabled={status === "busy"}
-              title="Re-query Locked + RevealRequested events from Sepolia"
+              title="Re-read the chain to pick up any vault state that changed since you last loaded the page."
             >
               ↻ Refresh
             </button>
@@ -640,7 +640,7 @@ export default function Page() {
                           </button>
                           <span
                             className="info-icon"
-                            title="Calls triggerReveal() on the contract. After the timer expires, this flags both ciphertexts as publicly decryptable so the Zama KMS network is allowed to decrypt and sign them. One MetaMask transaction. Anyone can call this — not just you."
+                            title="First half of the reveal. After the timer is up, Trigger marks the sealed bid as 'safe to open' so Zama's decryption network is allowed to publish the cleartext. One MetaMask transaction. In a real auction this step is permissionless — the bidder, the auctioneer, or any observer can close the bidding once the deadline passes; here too, anyone can press it."
                           >?</span>
                         </span>
                         <span className="action-pair">
@@ -652,7 +652,7 @@ export default function Page() {
                           </button>
                           <span
                             className="info-icon"
-                            title="Asks the relayer for a KMS-signed cleartext + proof, then calls fulfillReveal() which verifies the signatures on-chain via FHE.checkSignatures and writes the cleartext into the vault. One MetaMask transaction. Has to be called AFTER Trigger lands."
+                            title="Second half of the reveal. After Trigger has marked the bid as openable, Fulfill fetches the actual cleartext from Zama's decryption network and writes it on-chain. The contract checks the network's signature before accepting the answer, so nobody can forge a fake one. One MetaMask transaction. Has to come after Trigger."
                           >?</span>
                         </span>
                       </>
@@ -675,23 +675,23 @@ export default function Page() {
                   <p className="hint" style={{ marginTop: 12 }}>
                     {!ready ? (
                       <>
-                        <strong>Locked — {countdown} left.</strong> The ciphertexts are on-chain
-                        but nobody can read them — not even the contract — until{" "}
+                        <strong>Sealed — {countdown} left.</strong> Your bid sits on-chain in
+                        encrypted form. Nobody can read it — not even the contract — until{" "}
                         <code>{new Date(v.revealAt * 1000).toLocaleTimeString()}</code>. The
-                        Trigger button will light up automatically when the timer expires.
+                        Trigger button will light up on its own when the timer runs out.
                       </>
                     ) : !v.triggered ? (
                       <>
-                        <strong>Step 3 of 4 — press “Trigger”.</strong> The timer expired, so
-                        <code> triggerReveal()</code> will flag both ciphertexts as publicly
-                        decryptable. One MetaMask transaction.
+                        <strong>Timer&apos;s up — press Trigger.</strong> This calls{" "}
+                        <code>triggerReveal()</code> which tells Zama&apos;s decryption network
+                        it&apos;s now allowed to publish your bid. One MetaMask transaction.
                       </>
                     ) : (
                       <>
-                        <strong>Step 4 of 4 — press “Fulfill”.</strong> The relayer fetches a
-                        KMS-signed cleartext for those handles, and <code>fulfillReveal()</code>
-                        verifies the signatures on-chain via <code>FHE.checkSignatures</code> and
-                        writes the cleartext below.
+                        <strong>Bid is openable — press Fulfill.</strong> Zama&apos;s network
+                        decrypts your bid and signs the result. <code>fulfillReveal()</code>
+                        {" "}checks that signature on-chain, then writes the cleartext below.
+                        One MetaMask transaction.
                       </>
                     )}
                   </p>
