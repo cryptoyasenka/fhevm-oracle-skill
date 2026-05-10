@@ -162,8 +162,26 @@ button.ghost-btn {
   padding: 6px 12px;
   width: auto;
   min-width: 0;
+  transition: color 0.12s, border-color 0.12s, background 0.12s;
 }
-button.ghost-btn:hover:not(:disabled) { color: var(--danger); border-color: var(--danger); }
+/* Default: destructive-flavored (Disconnect, Hide). */
+button.ghost-btn:hover:not(:disabled) {
+  color: var(--danger);
+  border-color: var(--danger);
+  background: rgba(255, 107, 107, 0.08);
+}
+/* Positive variant — restoring something previously dismissed. */
+button.ghost-btn.positive:hover:not(:disabled) {
+  color: var(--ok);
+  border-color: var(--ok);
+  background: rgba(94, 210, 138, 0.10);
+}
+/* Neutral variant — non-destructive utility (Refresh, view-mode toggle). */
+button.ghost-btn.neutral:hover:not(:disabled) {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: rgba(255, 214, 51, 0.10);
+}
 
 /* ---------- Use cases ---------- */
 

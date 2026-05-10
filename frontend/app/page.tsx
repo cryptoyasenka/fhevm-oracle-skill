@@ -555,33 +555,53 @@ export default function Page() {
 
       {vaultConfigured && account && onSepolia && (
         <section className="card">
-          <h2>
-            Your vaults{" "}
-            <span className="pill">
-              {vaults.filter((v) => showHidden || !hidden.has(String(v.id))).length}
-            </span>
-            <button
-              onClick={refreshVaults}
-              className="ghost-btn"
-              style={{ marginLeft: 12 }}
-              disabled={status === "busy"}
-              title="Re-read the chain to pick up any vault state that changed since you last loaded the page."
-            >
-              ↻ Refresh
-            </button>
-            {vaults.some((v) => hidden.has(String(v.id))) && (
-              <button
-                onClick={() => setShowHidden((s) => !s)}
-                className="ghost-btn"
-                style={{ marginLeft: 8 }}
-                title="Toggle the vaults you've dismissed"
-              >
-                {showHidden
-                  ? "hide dismissed"
-                  : `show ${vaults.filter((v) => hidden.has(String(v.id))).length} hidden`}
-              </button>
-            )}
-          </h2>
+          {(() => {
+            const visibleCount = vaults.filter((v) => !hidden.has(String(v.id))).length;
+            const hiddenCount = vaults.length - visibleCount;
+            const shownCount = showHidden ? vaults.length : visibleCount;
+            return (
+              <h2 style={{ display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center" }}>
+                Your vaults
+                <span className="pill">{shownCount}</span>
+                <span
+                  className={showHidden ? "pill live" : "pill ok"}
+                  title={
+                    showHidden
+                      ? "Showing every vault on this account, including the ones you dismissed (those appear dimmed)."
+                      : "Showing only the vaults you haven't dismissed."
+                  }
+                >
+                  {showHidden ? "Showing all" : "Visible only"}
+                </span>
+                {hiddenCount > 0 && !showHidden && (
+                  <span className="pill" style={{ opacity: 0.7 }}>
+                    {hiddenCount} dismissed hidden
+                  </span>
+                )}
+                <button
+                  onClick={refreshVaults}
+                  className="ghost-btn neutral"
+                  disabled={status === "busy"}
+                  title="Re-read the chain to pick up any vault state that changed since you last loaded the page."
+                >
+                  ↻ Refresh
+                </button>
+                {hiddenCount > 0 && (
+                  <button
+                    onClick={() => setShowHidden((s) => !s)}
+                    className="ghost-btn neutral"
+                    title={
+                      showHidden
+                        ? "Switch back to showing only the vaults you haven't dismissed."
+                        : "Show every vault on this account, including the ones you dismissed."
+                    }
+                  >
+                    {showHidden ? "Show visible only" : `Show all (${vaults.length})`}
+                  </button>
+                )}
+              </h2>
+            );
+          })()}
           {vaults.length === 0 && (
             <p className="lede">No vaults yet for this account on Sepolia.</p>
           )}
@@ -603,7 +623,7 @@ export default function Page() {
               <div
                 key={String(v.id)}
                 className="card vault-row"
-                style={isHidden ? { opacity: 0.5 } : undefined}
+                style={isHidden ? { opacity: 0.4 } : undefined}
               >
                 <div className="row" style={{ alignItems: "start" }}>
                   <dl className="kv" style={{ flex: 2 }}>
@@ -619,6 +639,11 @@ export default function Page() {
                         <span className="pill live">timer up — trigger next</span>
                       ) : (
                         <span className="pill">locked</span>
+                      )}
+                      {isHidden && (
+                        <span className="pill" style={{ marginLeft: 6 }}>
+                          dismissed
+                        </span>
                       )}
                     </dd>
                     {v.revealed && (
@@ -659,15 +684,15 @@ export default function Page() {
                     )}
                     <button
                       onClick={() => toggleHidden(v.id)}
-                      className="ghost-btn"
+                      className={isHidden ? "ghost-btn positive" : "ghost-btn"}
                       title={
-                        hidden.has(String(v.id))
-                          ? "Restore this vault to the visible list"
+                        isHidden
+                          ? "Bring this vault back to the visible list."
                           : "Hide this vault from the dashboard. The vault stays on-chain — this only affects your local view."
                       }
                       style={{ marginLeft: "auto" }}
                     >
-                      {hidden.has(String(v.id)) ? "↺ Restore" : "✕ Hide"}
+                      {isHidden ? "↺ Restore" : "✕ Hide"}
                     </button>
                   </div>
                 </div>
