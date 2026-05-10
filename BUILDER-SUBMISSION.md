@@ -53,7 +53,14 @@
 
 ### Sepolia transaction (lock + reveal demo)
 
-> [PASTE SEPOLIA ETHERSCAN URL AFTER ON-CHAIN DEMO]
+> https://sepolia.etherscan.io/tx/0xbb66e334506b7f7dcfe68b3f33e30d76f5d778396556553ea0df042091209c70
+>
+> `fulfillReveal(id=4, cleartexts, proof)` — KMS-signed callback that runs
+> `FHE.checkSignatures` against `(handles, cleartexts, proof)`, flips
+> `revealed = true`, then `abi.decode`s `(uint64 amount, uint256 secret)`
+> into storage. The full lock → trigger → fulfill cycle is visible in
+> contract Transactions: lock at `0x874e93155c0efacdb1c717d9531c11bd1f992ef376ff941785b97f741368055d`,
+> trigger at `0x6ab3ae2720703268a1449ed40a47fb3e5ca48d80c593a08a837cff731ab5be62`.
 
 ### Demo video URL
 
