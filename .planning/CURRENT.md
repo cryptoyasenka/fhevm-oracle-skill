@@ -96,6 +96,7 @@ Submission code + docs are clean. Yana's manual run:
 - FHECounter on Etherscan: https://sepolia.etherscan.io/address/0x839A250cC9E5a55C35EB8b47e3E9f0B42d7ad912
 
 ## Commits on `main` (latest first)
+- `56b9c26` — docs(submissions): BUILDER AP-002 wording — 'state write' → 'cleartext write'
 - `2d76979` — docs(video): fourth-pass — script + slides match contract NatSpec ('FIRST line' → 'before any state write')
 - `be77687` — docs: third-pass polish — NatSpec/test header consistency + drop stale Vercel comments
 - `14f7935` — chore: CURRENT.md — second-pass audit complete
