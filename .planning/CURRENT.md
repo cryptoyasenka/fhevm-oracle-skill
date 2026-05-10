@@ -1,6 +1,21 @@
 # CURRENT — fhevm-oracle-skill
 
-**Last touched:** 2026-05-10 evening (session paused before recording Clip 1)
+**Last touched:** 2026-05-11 morning — упрощённый voice-over + cue cards + готовые MP4 клипы
+
+## 🆕 2026-05-11 заметка для Yana
+
+Перед записью используй упрощённый скрипт:
+- **`.planning/VIDEO-VOICEOVER-SIMPLE.md`** — короткие предложения, фонетические подсказки для сложных слов, темп 88 wpm (медленно для тебя — комфортно)
+- **`cue-cards/seg1..seg6.png`** — открой на втором мониторе и читай прямо с них (телесуфлёр, крупный шрифт, акценты жёлтым)
+- **`video-clips/clip1-hook-static.mp4` / `clip2-problem-static.mp4` / `clip6-outro-static.mp4`** — уже готовые MP4 нужной длительности (22s/35s/18s) для статичных сегментов 1, 2, 6. В CapCut кладёшь их как видеоряд, поверх своя голосовая запись. Win+G для этих сегментов **не нужен**.
+- Старый `VIDEO-VOICEOVER.md` оставила как reference, но **читай из SIMPLE-версии**
+
+Что осталось записать через Win+G:
+- Сегмент 3 (VS Code AsyncRevealVault.sol) — нужен live highlight
+- Сегмент 4 (npx hardhat test в терминале)
+- Сегмент 5 (frontend демо + MetaMask)
+
+
 
 ## ⚡ ВОЗВРАЩЕНИЕ К РАБОТЕ — ЧИТАЙ ЭТО ПЕРВЫМ
 
