@@ -1,11 +1,18 @@
 # CURRENT — fhevm-oracle-skill
 
-**Last touched:** 2026-05-10 (NIGHT MODE — judge audit + slide pack + correctness sweep)
-**Status:** Repo combed for false claims. AsyncRevealVault live on Sepolia. 9 CapCut-ready slides committed. Awaiting Yana's recording + form submission.
+**Last touched:** 2026-05-10 (morning — Yana's live testing pass + Vercel infra fix)
+**Status:** Frontend wallet UX hardened (Disconnect, persistence, listeners, RPC compat fixes). Vercel project repaired (Root Directory `.` → `frontend`, GitHub auto-deploy now wired). Awaiting Yana's on-chain demo + video recording + form submission.
 
 ## Status
 
-### Done by night-mode pass (this session)
+### Done in morning live-testing pass (2026-05-10)
+- [x] Frontend wallet UX: Disconnect button + EIP-1193 listeners + reload persistence (commits `982449b`, `7dd31b4`)
+- [x] Use-cases grid filled to 6 cards / 3×2 (commit `3145085`)
+- [x] Wallet RPC compat: `eth_getLogs` block-range cap at 49K + EIP-55 address normalize via `ethers.getAddress()` in lock/trigger/fulfill (commit `a5d3aac`)
+- [x] Vercel project repair: linked to GitHub `cryptoyasenka/fhevm-oracle-skill` main branch + Root Directory patched from `.` to `frontend` via Vercel API (CLI lacks command). Auto-deploy now triggers on push.
+- [x] Manual prod deploy after fixes via `vercel --prod` to confirm latest live at https://fhevm-oracle-frontend.vercel.app
+
+### Done by night-mode pass (previous session)
 - [x] Judge audit on README, BUILDER-SUBMISSION, AsyncRevealVault.sol — caught and fixed CRITICAL false claims:
   - README: wrong `FHE.checkSignatures` signature (was 2-arg, now correct 3-arg) + dropped hallucinated "OpenZeppelin's published anti-patterns" reference (commit `b4520d1`)
   - BUILDER-SUBMISSION: dropped fictional `outstandingRequestID` / `CANCEL_GRACE` / `cancelOutstandingRequest` features; mapped each highlight to real AP-NNN (commit `b4520d1`)
@@ -35,7 +42,7 @@
 - [ ] Submit both forms before 2026-05-11 11:59 UTC
 
 ## Open files
-- Nothing in active edit. All work committed and pushed through `8e24442`.
+- Nothing in active edit. All work committed and pushed through `a5d3aac` + this CURRENT.md update.
 
 ## Next step (concrete)
 Yana drives. Agent side waits for her morning checklist execution per `.planning/TOMORROW-2026-05-10.md`.
@@ -66,6 +73,10 @@ Yana drives. Agent side waits for her morning checklist execution per `.planning
 - FHECounter on Etherscan: https://sepolia.etherscan.io/address/0x839A250cC9E5a55C35EB8b47e3E9f0B42d7ad912
 
 ## Commits on `main` (latest first)
+- `a5d3aac` — fix(frontend): wallet RPC compat — block-range cap + EIP-55 address normalize
+- `3145085` — ui: fill use-cases grid with two more primitives (DAO votes, embargoed disclosures)
+- `7dd31b4` — feat(frontend): persist wallet connection across page reloads
+- `982449b` — feat(frontend): Disconnect button + EIP-1193 event listeners
 - `8e24442` — fix(video): scrub fictional API refs, point at slide PNGs
 - `12fe7d4` — polish: drop node_modules path in SKILL.md, link upstream FHE.sol
 - `c18c8e3` — feat: PNG slides for CapCut video assembly (9 slides)
