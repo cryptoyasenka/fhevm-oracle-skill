@@ -55,6 +55,59 @@ export default function Page() {
     }
   }, [append]);
 
+  const disconnect = useCallback(async () => {
+    setAccount(null);
+    setChainId(null);
+    setVaults([]);
+    append("Disconnected.");
+    // EIP-2255: ask the wallet to drop its eth_accounts grant for this site so
+    // a fresh "Connect" reopens the account picker. MetaMask 11+ supports it;
+    // older wallets will throw — swallow it, the local clear above is enough.
+    try {
+      await window.ethereum?.request({
+        method: "wallet_revokePermissions",
+        params: [{ eth_accounts: {} }],
+      });
+    } catch {
+      /* unsupported wallet — local disconnect is sufficient */
+    }
+  }, [append]);
+
+  useEffect(() => {
+    // EIP-1193 events live on the provider but ethers' Eip1193Provider type
+    // doesn't model them. MetaMask + every other injected wallet implements them.
+    const eth = window.ethereum as unknown as
+      | {
+          on?: (event: string, handler: (...args: unknown[]) => void) => void;
+          removeListener?: (event: string, handler: (...args: unknown[]) => void) => void;
+        }
+      | undefined;
+    if (!eth?.on) return;
+    const onAccountsChanged = (...args: unknown[]) => {
+      const accounts = (args[0] as string[]) ?? [];
+      if (accounts.length === 0) {
+        setAccount(null);
+        setVaults([]);
+        append("Wallet disconnected.");
+      } else {
+        setAccount(accounts[0]);
+        setVaults([]);
+        append(`Switched to ${accounts[0].slice(0, 10)}…`);
+      }
+    };
+    const onChainChanged = (...args: unknown[]) => {
+      const id = BigInt(args[0] as string);
+      setChainId(id);
+      append(`Network changed to chain ${id}`);
+    };
+    eth.on("accountsChanged", onAccountsChanged);
+    eth.on("chainChanged", onChainChanged);
+    return () => {
+      eth.removeListener?.("accountsChanged", onAccountsChanged);
+      eth.removeListener?.("chainChanged", onChainChanged);
+    };
+  }, [append]);
+
   const switchToSepolia = useCallback(async () => {
     if (!window.ethereum) return;
     try {
@@ -206,9 +259,19 @@ export default function Page() {
           {!account ? (
             <button onClick={connect} disabled={status === "busy"}>Connect wallet</button>
           ) : !onSepolia ? (
-            <button onClick={switchToSepolia} className="secondary">Switch to Sepolia</button>
+            <>
+              <button onClick={switchToSepolia} className="secondary">Switch to Sepolia</button>
+              <button onClick={disconnect} className="ghost-btn" title="Disconnect wallet">
+                Disconnect
+              </button>
+            </>
           ) : (
-            <span className="pill ok">{account.slice(0, 6)}…{account.slice(-4)}</span>
+            <>
+              <span className="pill ok">{account.slice(0, 6)}…{account.slice(-4)}</span>
+              <button onClick={disconnect} className="ghost-btn" title="Disconnect wallet">
+                Disconnect
+              </button>
+            </>
           )}
           <a className="ghost-link" href="https://github.com/cryptoyasenka/fhevm-oracle-skill" target="_blank" rel="noreferrer">
             View source on GitHub →
