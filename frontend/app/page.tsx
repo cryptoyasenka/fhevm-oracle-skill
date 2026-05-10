@@ -438,14 +438,20 @@ export default function Page() {
 
       <section className="card">
         <h2>Try it{vaultConfigured ? "" : " — preview"}</h2>
-        <p className="lede" style={{ marginBottom: 20 }}>
-          You&apos;re about to seal two values on Sepolia. <strong>amount</strong> is a number
-          (think auction bid, vesting amount). <strong>secret</strong> is up to 32 bytes
-          (think a future-dated note, a commit-reveal seed). Both get encrypted in your
-          browser with the KMS public key — the contract stores opaque ciphertexts and
-          can&apos;t read them. After the timer below expires, you&apos;ll come back here to
-          run <em>Trigger</em> and <em>Fulfill</em>; the cleartext lands on-chain via a
-          KMS-signed proof.
+        <p className="callout">
+          <strong>Role-play: a sealed-bid auction.</strong> Pretend you&apos;re a bidder.
+          You set a <strong>bid</strong> (a number) and a <strong>note</strong> (any
+          payload up to 32 bytes — a hash, an ID, a message), encrypt them in your
+          browser, and lock them on Sepolia. Until the timer expires, nobody — not
+          other bidders, not the auctioneer, not even the contract — can see your bid.
+          After the timer, anyone can run Trigger + Fulfill to surface the cleartext
+          and settle the auction.
+        </p>
+        <p className="hint" style={{ marginBottom: 20 }}>
+          The contract is a <em>primitive</em> — it doesn&apos;t run the auction itself,
+          and no tokens move. It just provides the seal-and-reveal mechanic. Real apps
+          would compose this with auction / vesting / DAO-vote / dead-man-switch logic
+          (see the use-cases above).
         </p>
         {!vaultConfigured ? (
           <p className="lede">
@@ -464,19 +470,37 @@ export default function Page() {
         ) : (
           <div className="row">
             <div>
-              <label>Amount</label>
+              <label>
+                Amount (your bid)
+                <span
+                  className="info-icon"
+                  title="Your sealed bid in this make-believe auction. Any whole number up to 2⁶⁴-1 (≈18 quintillion). Stored on-chain as an opaque euint64 ciphertext — no one can read it until the timer expires. The 12345 default has no meaning, change it to anything."
+                >?</span>
+              </label>
               <input value={amount} onChange={(e) => setAmount(e.target.value)} />
-              <p className="hint">A regular number ≤ 2⁶⁴-1. Stored encrypted as <code>euint64</code>.</p>
+              <p className="hint">e.g. <code>12345</code> as a bid of $12,345. Encrypted as <code>euint64</code>.</p>
             </div>
             <div>
-              <label>Secret</label>
+              <label>
+                Secret (note attached to bid)
+                <span
+                  className="info-icon"
+                  title="A 32-byte payload sealed alongside the bid — could be a bidder ID, a hash linking the bid to you, a private message, anything. Hex (0x…) or decimal. Stored as euint256. The 0xc0ffee default is just a memorable hex value."
+                >?</span>
+              </label>
               <input value={secret} onChange={(e) => setSecret(e.target.value)} />
-              <p className="hint">Hex (<code>0x…</code>) or decimal, up to 32 bytes. Stored as <code>euint256</code>.</p>
+              <p className="hint">e.g. <code>0xc0ffee</code> as a bidder hash. Encrypted as <code>euint256</code>.</p>
             </div>
             <div>
-              <label>Reveal in (sec)</label>
+              <label>
+                Reveal in (sec)
+                <span
+                  className="info-icon"
+                  title="How long until the 'auction closes' and the bid can be revealed. After this many seconds you can press Trigger and then Fulfill to surface the cleartext on-chain. 60 is the smallest value that demos the full round-trip comfortably."
+                >?</span>
+              </label>
               <input value={delaySec} onChange={(e) => setDelaySec(e.target.value)} />
-              <p className="hint">Try 60 to see the full round-trip in a minute.</p>
+              <p className="hint">Use 60 to see the full round-trip in a minute.</p>
             </div>
             <button onClick={lock} disabled={status === "busy"}>
               Encrypt and lock
@@ -526,33 +550,31 @@ export default function Page() {
                   <div className="vault-actions">
                     {!v.revealed && (
                       <>
-                        <button
-                          className="secondary"
-                          disabled={!canTrigger || status === "busy"}
-                          onClick={() => trigger(v.id)}
-                          title={
-                            !ready
-                              ? "Wait until revealAt"
-                              : v.triggered
-                                ? "Already triggered — go to Fulfill"
-                                : undefined
-                          }
-                        >
-                          Trigger
-                        </button>
-                        <button
-                          disabled={!canFulfill || status === "busy"}
-                          onClick={() => fulfill(v.id)}
-                          title={
-                            !ready
-                              ? "Wait until revealAt"
-                              : !v.triggered
-                                ? "Press Trigger first — Fulfill won't work until the contract has flagged the ciphertexts"
-                                : undefined
-                          }
-                        >
-                          Fulfill
-                        </button>
+                        <span className="action-pair">
+                          <button
+                            className="secondary"
+                            disabled={!canTrigger || status === "busy"}
+                            onClick={() => trigger(v.id)}
+                          >
+                            Trigger
+                          </button>
+                          <span
+                            className="info-icon"
+                            title="Calls triggerReveal() on the contract. After the timer expires, this flags both ciphertexts as publicly decryptable so the Zama KMS network is allowed to decrypt and sign them. One MetaMask transaction. Anyone can call this — not just you."
+                          >?</span>
+                        </span>
+                        <span className="action-pair">
+                          <button
+                            disabled={!canFulfill || status === "busy"}
+                            onClick={() => fulfill(v.id)}
+                          >
+                            Fulfill
+                          </button>
+                          <span
+                            className="info-icon"
+                            title="Asks the relayer for a KMS-signed cleartext + proof, then calls fulfillReveal() which verifies the signatures on-chain via FHE.checkSignatures and writes the cleartext into the vault. One MetaMask transaction. Has to be called AFTER Trigger lands."
+                          >?</span>
+                        </span>
                       </>
                     )}
                   </div>
