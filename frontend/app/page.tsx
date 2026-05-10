@@ -518,6 +518,11 @@ export default function Page() {
             sealed-bid auctions, vesting cliffs, or messages that auto-publish if you stop
             paying attention.
           </p>
+          <p className="hero-lede" style={{ fontSize: 14, color: "var(--muted)", marginTop: 12 }}>
+            Currently deployed on <strong>Sepolia testnet</strong>: Zama&apos;s coprocessor + KMS
+            network aren&apos;t live on Ethereum mainnet yet. The contract itself is L1-ready —
+            it ports as-is the day Zama&apos;s mainnet rollout lands.
+          </p>
         </div>
         <div className="hero-actions">
           {!account ? (
@@ -630,13 +635,15 @@ export default function Page() {
       <section className="card" id="try">
         <h2>Try it{vaultConfigured ? "" : " — preview"}</h2>
         <p className="callout">
-          <strong>Role-play: a sealed-bid auction.</strong> Pretend you&apos;re a bidder.
-          You set a <strong>bid</strong> (a number) and a <strong>note</strong> (any
-          payload up to 32 bytes — a hash, an ID, a message), encrypt them in your
-          browser, and lock them on Sepolia. Until the timer expires, nobody — not
-          other bidders, not the auctioneer, not even the contract — can see your bid.
-          After the timer, anyone can run Trigger + Fulfill to surface the cleartext
-          and settle the auction.
+          <strong>Role-play: a sealed-bid auction</strong> — one of many possible scenarios
+          (the primitive is domain-neutral; see use-cases above for DAO commit-reveal votes,
+          vesting cliffs, dead-man-switch messages). We picked auctions to make the inputs
+          feel concrete. Pretend you&apos;re a bidder: you set a <strong>bid</strong> (a number)
+          and a <strong>note</strong> (any payload up to 32 bytes — a hash, an ID, a message),
+          encrypt them in your browser, and lock them on Sepolia. Until the timer expires,
+          nobody — not other bidders, not the auctioneer, not even the contract — can see your
+          bid. After the timer, anyone can run Trigger + Fulfill to surface the cleartext and
+          settle the auction.
         </p>
         <p className="hint" style={{ marginBottom: 20 }}>
           The contract is a <em>primitive</em> — it doesn&apos;t run the auction itself,
@@ -929,10 +936,10 @@ export default function Page() {
                       </>
                     ) : (
                       <>
-                        <strong>Bid is openable — press Fulfill.</strong> Zama&apos;s network
-                        decrypts your bid and signs the result. <code>fulfillReveal()</code>
-                        {" "}checks that signature on-chain, then writes the cleartext below.
-                        One MetaMask transaction.
+                        <strong>Sealed data is openable — press Fulfill.</strong> Zama&apos;s
+                        network decrypts the ciphertext and signs the result.{" "}
+                        <code>fulfillReveal()</code> checks that signature on-chain, then writes
+                        the cleartext below. One MetaMask transaction.
                       </>
                     )}
                   </p>
