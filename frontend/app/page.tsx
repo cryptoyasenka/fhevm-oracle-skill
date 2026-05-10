@@ -439,14 +439,44 @@ export default function Page() {
             <a href="#vaults">Your vaults</a>
             <a href="#log">Activity log</a>
           </div>
-          <a
-            className="topnav-github"
-            href="https://github.com/cryptoyasenka/fhevm-oracle-skill"
-            target="_blank"
-            rel="noreferrer"
-          >
-            GitHub →
-          </a>
+          <div className="topnav-right">
+            {account && (
+              <span className="topnav-wallet">
+                {!onSepolia ? (
+                  <button
+                    onClick={switchToSepolia}
+                    className="ghost-btn neutral"
+                    title="You're connected but on the wrong network — click to switch to Sepolia."
+                  >
+                    Switch to Sepolia
+                  </button>
+                ) : (
+                  <span
+                    className="pill ok"
+                    title={`Connected: ${account}`}
+                  >
+                    {account.slice(0, 6)}…{account.slice(-4)}
+                  </span>
+                )}
+                <button
+                  onClick={disconnect}
+                  className="ghost-btn topnav-disconnect"
+                  title="Disconnect this wallet from the page."
+                  aria-label="Disconnect wallet"
+                >
+                  ✕
+                </button>
+              </span>
+            )}
+            <a
+              className="topnav-github"
+              href="https://github.com/cryptoyasenka/fhevm-oracle-skill"
+              target="_blank"
+              rel="noreferrer"
+            >
+              GitHub →
+            </a>
+          </div>
         </div>
       </nav>
     <main>
