@@ -144,7 +144,7 @@ def slide_03_safety():
     text(d, (120, 190), "AsyncRevealVault.sol — every line below is a live commit.", fnt=f_sub, fill=MUTED)
 
     items = [
-        ("✓", "checkSignatures(handles, cleartexts, proof) is the FIRST line"),
+        ("✓", "checkSignatures(handles, cleartexts, proof) runs before any state write"),
         ("✓", "revealed = true consumed BEFORE any cleartext write"),
         ("✓", "handles[i] order matches abi.decode tuple position"),
         ("✓", "FHE.allowThis + FHE.allow(_, depositor) after lock()"),
@@ -259,7 +259,7 @@ def callout(name: str, label: str, body: str):
 
 def callouts():
     callout("07-callout-checksig.png", "AP-001",
-            "checkSignatures(handles, cleartexts, proof) — FIRST line")
+            "checkSignatures runs before any state write")
     callout("08-callout-replay.png", "AP-002",
             "revealed = true BEFORE any cleartext write")
     callout("09-callout-finality.png", "AP-010",

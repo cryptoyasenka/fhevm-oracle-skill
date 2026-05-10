@@ -18,7 +18,7 @@ Without context, an agent will skip checkSignatures and let anyone fake a decryp
 
 ## Сегмент 3 (0:55–1:30) — What the skill produces
 
-This is AsyncRevealVault — the reference contract written from the skill. Notice: checkSignatures is the **very first line** of the callback. The replay flag is set to true **before any cleartext write** — re-submitting the same proof reverts at AlreadyRevealed. The timestamp check is a **strict greater-than**. ACL discipline is preserved across every state mutation. Two hundred and twenty lines, one file.
+This is AsyncRevealVault — the reference contract written from the skill. Notice: checkSignatures runs **before any state write** in the callback — the only lines above it are cheap input-validity reverts that touch no cleartext. The replay flag flips to true **before** the cleartext lands — re-submitting the same KMS proof reverts at AlreadyRevealed. The timestamp check is a **strict greater-than**. ACL discipline is preserved across every state mutation. Two hundred and twenty lines, one file.
 
 ---
 

@@ -47,7 +47,7 @@
 **Экран:** скринкаст W2 (`AsyncRevealVault.sol`).
 
 **Что показать (скроллом + выделением мышью):**
-1. Функция `fulfillReveal` (строка ~135) → `FHE.checkSignatures(handles, abiEncodedCleartexts, decryptionProof);` (строка 152) — это **первая строка** после проверок состояния. Это AP-001.
+1. Функция `fulfillReveal` (строка ~135) → `FHE.checkSignatures(handles, abiEncodedCleartexts, decryptionProof);` (строка 152) — стоит **до любой записи в state**. Выше неё только три cheap input-validity revert'а, которые ничего не мутируют и не читают cleartext. Это AP-001.
 2. Строка ниже — `v.revealed = true;` (строка 155) — replay-guard ставится **до** записи cleartext. Это AP-002.
 3. Скроллим вверх к `triggerReveal` (~ строка 106) → `if (block.timestamp <= v.revealAt) revert RevealTooEarly();` — строгое `<=`, не `<`. Это AP-010.
 4. Скроллим к `lock` (строка 67) → блок `FHE.allowThis(amount); FHE.allowThis(secret); FHE.allow(amount, msg.sender); FHE.allow(secret, msg.sender);` — ACL discipline. Это AP-004 + AP-005.
