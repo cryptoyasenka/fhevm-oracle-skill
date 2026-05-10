@@ -32,133 +32,158 @@
 
 ---
 
-## 1. ДО записи (15-30 мин подготовки)
+## 1. ДО записи (15 мин подготовки)
 
-### 1.1 Окружение
+### 1.1 НЕ надо открывать 5 окон сразу
 
-Открой эти 5 окон, сложи в Alt+Tab порядок 1→2→3→4→5:
+Раньше я писала «открой 5 окон» — забудь. Запутаешься. Вместо этого:
 
-- **W1 — VS Code**, открыт `C:/Projects/fhevm-oracle-skill/SKILL.md`
-  - Скролл на секцию `## The 10 anti-patterns (drilled with fix templates)` (~строка 184)
-  - Шрифт ≥16pt, тёмная тема, side panel закрыт
-- **W2 — VS Code (новое окно или таб)**, открыт `C:/Projects/fhevm-oracle-skill/contracts/AsyncRevealVault.sol`
-  - Курсор на функции `fulfillReveal` (~строка 135)
-  - Шрифт ≥16pt
-- **W3 — PowerShell в проекте**:
-  ```
-  cd C:/Projects/fhevm-oracle-skill
-  cls
-  ```
-  - Шрифт ≥18pt
-  - Готов запустить `npx hardhat test`
-- **W4 — Браузер вкладка 1**: https://fhevm-oracle-frontend.vercel.app
-  - MetaMask установлен и УЖЕ подключён к Sepolia
-  - В кошельке ≥0.05 SepETH (если меньше — добери из faucet `https://sepoliafaucet.com`)
-  - **Перед записью**: нажми × Hide на каждой из 4 карточек id=1..4 чтобы список был чистым (вернуть их обратно нельзя без пересоздания, но это ОК — для видео тебе они не нужны)
-- **W5 — Браузер вкладка 2**: https://sepolia.etherscan.io/address/0x256e8948057982D483C60F7c060E3253a4d6A49b
+**Принцип:** в каждом сегменте открываешь ТОЛЬКО ОДНО окно, записываешь короткий клип (20-45 сек), останавливаешь, закрываешь. Потом следующий сегмент → следующее окно. Получишь 5 коротких файлов. В CapCut склеишь.
 
-### 1.2 Микрофон (для real-person правила)
+То есть никакого Alt+Tab вживую. Никакой паники. Один клип = одно окно = одна короткая речь.
 
-- **Микрофон**: записывай через OBS Studio, CapCut Desktop, или просто Win+G GameBar. Проверка: скажи «раз-два-три», переслушай — нет фона, нет эха, не клипует.
-- **Веб-камера НЕ нужна.** Zama не требует показа лица. «Real-person pitch» = живой голос + не AI-видео. Screencast + твой голос полностью соответствует правилу.
+### 1.2 Чем записывать экран — Win+G (самое простое)
 
-### 1.3 Тех настройки записи
+В Windows 11 уже встроено. Не надо ничего ставить.
 
-- Разрешение записи: **1920×1080** (1080p)
-- Frame rate: **30 fps**
-- Битрейт: 8000 kbps
-- Курсор: включи подсветку клика если есть в записывалке (помогает зрителю)
+1. Нажми клавиши **Win + G** одновременно. Откроется панелька Game Bar
+2. В виджете «Capture» (значок камеры) нажми **круглый красный кружок** = «Start recording»
+3. Запись пошла. Теперь говори и кликай мышью — всё пишется
+4. Чтобы остановить — **Win+Alt+R** или нажми синий квадратик в всплывающей мини-панельке
+5. Файлы сохраняются в `C:\Users\Yana\Videos\Captures\` автоматически с датой+временем в имени
 
-### 1.4 Прорепетируй ОДИН раз без записи
+**Микрофон проверь ДО записи:** Win+G → значок шестерёнки → Audio → Default microphone → проверь что Volume не на нуле. Скажи «раз-два-три» в любой записи 5 сек, переслушай — слышно тебя? Окей.
 
-- Пройди все 6 сегментов с текстом (см. ниже)
-- Засеки время секундомером на телефоне
-- Если выходит >3:00 — режь Сегмент 5 (live demo) в монтаже потом, не сейчас
-- Если выходит <2:30 — добавь паузы между сегментами
+### 1.3 Подготовка к записи (один раз, 5 минут)
+
+- В каждое окно VS Code зайди и **увеличь шрифт** до 18-20pt: `Ctrl+=` (плюсик зажимай несколько раз)
+- В терминале PowerShell тоже подними шрифт: правый клик в шапке → Properties → Font → 22pt
+- В браузере Chrome: Ctrl+= 2-3 раза для зума ~125%
+- На Vercel-фронте **перед записью** нажми × Hide на 4 старых карточках id=1..4 (чтобы список был чистый)
+- В MetaMask убедись что подключён к Sepolia и есть ≥0.05 SepETH
+
+### 1.4 Прорепетируй текст один раз без записи
+
+- Прочти voice-over всех 6 сегментов вслух с секундомером на телефоне
+- Должно выйти 2:30-3:00. Если сильно меньше — медленнее. Если больше — режем Сегмент 5
+
+### 1.5 Веб-камера НЕ нужна
+
+Zama не требует показа лица. Screencast + твой голос = full compliance.
 
 ---
 
-## 2. Запись (≈30-45 мин с дублями)
+## 2. Запись — пошагово, 6 коротких клипов
 
-**Стратегия:** voice-over записываешь **ОДНИМ непрерывным дублем** под весь скрипт. Screencast/слайды записываешь отдельно сегментами. Совмещаешь в монтаже. Если запутаешься — скажи вслух «РЕЗАТЬ» и продолжи фразу заново, в монтаже легко вырежешь.
+**Стратегия (упрощённая):** записываешь 6 отдельных коротких клипов, в каждом своё окно. Голос пишется ВНУТРИ каждого клипа (не отдельной дорожкой) — Win+G сразу пишет и экран, и микрофон. Запутаешься в одном — переснимаешь только тот клип, остальные не трогаешь.
 
-Жирным **слова под акцент** (повышай голос).
+Перед каждым клипом — твоя текущая задача и точный текст. Жирным **акцент** (повышай голос).
+
+⚠️ **Правило 1:** перед каждым «Start recording» закрой все ненужные окна. На экране должно быть ТОЛЬКО то окно которое описано.
+
+⚠️ **Правило 2:** уточняй перед записью — текст ты читаешь со ВТОРОГО монитора или с распечатки на бумаге. Не из этого файла на том же экране что записываешь.
 
 ---
 
-### 🎬 Сегмент 1 — Hook (0:00–0:20)
+### 🎬 КЛИП 1 — Hook (~20 сек)
 
-**Видео:** статика `slides/01-title.png` все 20 сек. Голос звучит поверх. Этого достаточно: «real-person» = живой голос + не-AI видео.
+**Что открыть:** в браузере открой картинку `C:\Projects\fhevm-oracle-skill\slides\01-title.png` (просто двойной клик в Проводнике, откроется в фотопросмотрщике на весь экран).
 
-**Voice-over (читай ровно, ~50 слов = 22 сек):**
+**Что делать:** ничего. Картинка стоит на экране, ты говоришь.
+
+**Что сказать (читаешь медленно, ~22 сек):**
 
 > «FHEVM lets you compute on **encrypted data** on Ethereum. But the moment your contract needs to **reveal a result**, you hit the async decryption oracle — and that's where AI coding agents consistently ship **broken code**. fhevm-oracle is a SKILL.md that fixes that, plus a reference contract that proves the pattern works on Sepolia today.»
 
+**Запись:** Win+G → Start recording → говори → Stop. Сохрани файл, переименуй в `clip1-hook.mp4`.
+
 ---
 
-### 🎬 Сегмент 2 — Проблема (0:20–0:55) — статика или скролл
+### 🎬 КЛИП 2 — Проблема (~35 сек)
 
-**Видео (выбери один из двух):**
-- **A (быстрый):** статика `slides/02-anti-patterns.png` 35 сек
-- **B (живее):** screencast W1 — медленный скролл по секции AP-001…AP-010 в SKILL.md, мышкой выделяешь заголовки пока их называешь
+**Что открыть:** одна из двух опций — выбери что проще:
+- **Опция A (легче):** двойной клик на `slides\02-anti-patterns.png` — открой картинку на весь экран. Ничего на ней не делаешь.
+- **Опция B (живее):** открой VS Code на файле `C:\Projects\fhevm-oracle-skill\SKILL.md`. Через `Ctrl+G` → введи `184` → Enter. Курсор окажется на секции «The 10 anti-patterns». Закрой Explorer-панельку слева (`Ctrl+B`). Шрифт ≥18pt.
 
-**Voice-over (~75 слов = 35 сек):**
+**Что делать:**
+- Опция A: ничего, картинка стоит
+- Опция B: медленно скроллишь колёсиком ВНИЗ по списку AP-001 → AP-010, не быстрее одной строки в секунду
+
+**Что сказать (~35 сек):**
 
 > «Without context, an agent will skip checkSignatures and let anyone fake a decryption. It will mismatch handle order against the abi-decode tuple. It will write cleartext **before flipping the replay guard**, so the same KMS proof can be re-submitted. It will assume a sync decrypt that doesn't exist on mainnet. Or it will trigger reveal at exactly block-dot-timestamp equals revealAt — off by one. The skill enumerates **all ten anti-patterns** as muscle memory.»
 
+**Запись:** Win+G → Start → говори → Stop → `clip2-problem.mp4`.
+
 ---
 
-### 🎬 Сегмент 3 — Что генерит агент со скиллом (0:55–1:30) — screencast W2 — **САМЫЙ ВАЖНЫЙ**
+### 🎬 КЛИП 3 — Контракт (~35 сек) — самый важный
 
-**Видео:** screencast окна W2 (`AsyncRevealVault.sol`). Манипуляции мышью + клавиатурой по таймлайну voice-over:
+**Что открыть:** VS Code на файле `C:\Projects\fhevm-oracle-skill\contracts\AsyncRevealVault.sol`. `Ctrl+G` → `135` → Enter (попадёшь в `fulfillReveal`). Закрой Explorer (`Ctrl+B`). Шрифт ≥18pt. На экране видны строки ~130-160.
 
-| В этой фразе voice-over | Делаешь на экране |
-|---|---|
-| «checkSignatures runs **before any state write** in the callback» | Скролл к `fulfillReveal` строка ~135. Выделяй мышью строку 152 `FHE.checkSignatures(handles, abiEncodedCleartexts, decryptionProof);`. Опционально: накладываешь callout `slides/07-callout-checksig.png` в правый верхний угол на 2-3 сек. |
-| «only lines above it are cheap input-validity reverts that touch no cleartext» | Скролл вверх на 3-5 строк, покажи 3 revert строки выше checkSignatures (`if (v.depositor == address(0)) revert ...`, `if (v.revealed) revert ...`, `if (block.timestamp <= v.revealAt) revert ...`) |
-| «replay flag flips to true **before** the cleartext lands» | Скролл к строке 155 `v.revealed = true;`. Выдели её. Опционально callout `slides/08-callout-replay.png`. |
-| «strict greater-than» | Скролл вверх к `triggerReveal` ~строка 106, выдели `if (block.timestamp <= v.revealAt) revert RevealTooEarly();`. Опционально callout `slides/09-callout-finality.png`. |
-| «ACL discipline preserved» | Скролл к `lock` ~строка 67, выдели блок 4 строк `FHE.allowThis(...); FHE.allow(...);` |
-| «Two hundred and twenty lines, one file» | Зум-аут (Ctrl+Shift+−) чтобы был виден весь файл целиком |
+**Что делать на экране (по порядку, синхронно с голосом):**
 
-**Voice-over (~85 слов = 35 сек):**
+1. **Когда говоришь «checkSignatures runs before any state write»:** мышью выдели строку 152 (там `FHE.checkSignatures(handles, abiEncodedCleartexts, decryptionProof);`). Подержи выделение 2 сек.
+2. **Когда говоришь «cheap input-validity reverts that touch no cleartext»:** скролл колёсиком на 3-4 строки ВВЕРХ. Покажи 3 коротких revert-строки `if (...) revert ...`.
+3. **Когда говоришь «replay flag flips to true before the cleartext lands»:** скролл ВНИЗ на 3 строки до `v.revealed = true;` (~строка 155). Выдели её мышью.
+4. **Когда говоришь «strict greater-than»:** `Ctrl+G` → `106` → Enter. Выдели строку с `if (block.timestamp <= v.revealAt) revert RevealTooEarly();`.
+5. **Когда говоришь «two hundred and twenty lines, one file»:** нажми `Ctrl+Shift+−` (минус) 3-4 раза — экран отдалится, увидишь весь файл целиком как одно полотно.
+
+Не паникуй если не успеваешь идеально синхронизировать — главное чтобы выделение строки было в ~2 сек от фразы. Если разъехалось — переснимешь.
+
+**Что сказать (~35 сек):**
 
 > «This is AsyncRevealVault — the reference contract written from the skill. Notice: checkSignatures runs **before any state write** in the callback — the only lines above it are cheap input-validity reverts that touch no cleartext. The replay flag flips to true **before** the cleartext lands — re-submitting the same KMS proof reverts at AlreadyRevealed. The timestamp check is a **strict greater-than**. ACL discipline is preserved across every state mutation. Two hundred and twenty lines, one file.»
 
+**Запись:** Win+G → Start → говори+кликай → Stop → `clip3-contract.mp4`.
+
 ---
 
-### 🎬 Сегмент 4 — Тесты (1:30–2:00) — терминал W3
+### 🎬 КЛИП 4 — Тесты (~25 сек)
 
-**Видео:** 5 сек статика `slides/04-tests.png`, потом screencast терминала W3.
+**Что открыть:** PowerShell в папке проекта. Открой Windows Terminal (Win→набери «terminal»). Введи:
+```
+cd C:\Projects\fhevm-oracle-skill
+cls
+```
+Шрифт подними: правый клик в шапке → Properties → Font → 22pt.
 
-**Действия на экране:**
-1. На W3 набери `npx hardhat test` и нажми Enter
-2. Жди ~25 сек. **В монтаже** ускорь этот участок до 3-5 сек.
-3. Когда появится `4 passing` — подержи кадр 3 сек. Это финальный мани-шот этого сегмента.
+**Что делать на экране:**
 
-**Voice-over (~50 слов = 25 сек):**
+1. **Сразу после Start recording:** набери `npx hardhat test` и нажми Enter.
+2. Жди пока тесты бегут (~20-25 сек). Молчи или говори voice-over (см. ниже).
+3. Когда внизу появится **`4 passing`** — подержи кадр 3 сек.
+4. Stop.
+
+**Что сказать (~25 сек):**
 
 > «Four Hardhat mock-mode tests drill the same anti-patterns the skill enumerates: signature absence, replay-after-success, off-by-one finality, and the canonical happy path. A contract written from the skill **passes them by construction**.»
 
+**Запись:** Win+G → Start → набираешь команду → говоришь во время выполнения → видишь `4 passing` → ждёшь 3 сек → Stop → `clip4-tests.mp4`.
+
+⚠️ В CapCut потом ускоришь середину этого клипа в 5 раз чтобы тесты «пробежали» за 5 сек а не 25.
+
 ---
 
-### 🎬 Сегмент 5 — Live on-chain demo (2:00–2:45) — frontend W4 — **САМЫЙ РИСКОВЫЙ**
+### 🎬 КЛИП 5 — Live demo (~45 сек) — самый рискованный
 
-**Видео:** screencast W4 (https://fhevm-oracle-frontend.vercel.app).
+**Что открыть:** браузер на https://fhevm-oracle-frontend.vercel.app. **ДО НАЧАЛА ЗАПИСИ:**
+- Подключи кошелёк (Connect → MetaMask → Sepolia)
+- Нажми × Hide на старых карточках id=1..4 чтобы экран был пустой
+- Готов?
 
-**Действия на экране:**
+**Что делать на экране (после Start recording):**
 
-1. **Подключи кошелёк** (если не подключён) — кликни Connect, подтверди в MetaMask. **На запись это не идёт** (либо вырезаем, либо подключаешь до старта записи).
-2. **Введи Amount** = `63` (это число произнесёшь в voice-over)
-3. **Введи Secret** = `42`
-4. **Reveal time** = now+60sec (UI должен подставить, или ставь руками)
-5. **Нажми Lock** → подтверди в MetaMask → жди зелёную галочку (~10-15 сек)
-6. **Жди 60 секунд.** В монтаже ускорь этот участок до 3-5 сек («время идёт…»).
-7. **Нажми Trigger reveal** → подтверди → жди подтверждения
-8. **Нажми Fulfill** → подтверди → на странице появится cleartext `63` (amount) + `42` (secret)
-9. **Переключись на W5** (Etherscan вкладка) — покажи в списке транзакций строки `triggerReveal` + `fulfillReveal`
+1. **Введи Amount** = `63`
+2. **Введи Secret** = `42`
+3. **Reveal time** оставь default (now+60sec)
+4. **Нажми Lock** → MetaMask → Confirm → жди зелёную галочку (~15 сек)
+5. **Жди 60 секунд** до revealAt (в монтаже это ускоришь)
+6. **Нажми Trigger reveal** → MetaMask → Confirm
+7. **Нажми Fulfill** → MetaMask → Confirm → на экране появится cleartext `63`
+8. Stop.
 
-**Voice-over (~95 слов = 45 сек):**
+**Что сказать (~45 сек):**
 
 > «Now the live contract on Sepolia. I'm encrypting a number — **sixty-three**. The relayer SDK takes my plaintext, produces a ciphertext handle plus a zero-knowledge proof. Reveal in sixty seconds. The Lock transaction stores the encrypted handle and binds the ACL to me and the contract.
 >
@@ -166,22 +191,34 @@
 >
 > I trigger reveal. The vault flags both ciphertexts as publicly decryptable. The relayer fetches the KMS-signed cleartext and calls fulfillReveal. The callback verifies signatures, flips the replay guard, then writes the cleartext. **Sixty-three.** The number was encrypted on chain until the timer expired.»
 
-⚠️ **Если KMS callback залип (>2 мин на fulfillment):**
-- У тебя есть готовая успешная транзакция на Etherscan (vault id=4, fulfilled 11:42:48 UTC сегодня). URL уже вписан в `BUILDER-SUBMISSION.md`.
-- В монтаже: вместо живого fulfill вставь screenshot Etherscan-страницы той транзакции, озвучь «and so the result lands on chain» — судья поймёт.
-- Или склей с записанным заранее «эталонным» reveal с одного из прошлых тестов.
+**Запись:** Win+G → Start → проходи 8 шагов → Stop → `clip5-demo.mp4`.
+
+⚠️ **Если что-то пошло не так (KMS callback >2 мин не приходит):**
+- Stop запись
+- Открой готовую транзакцию: https://sepolia.etherscan.io/tx/0xbb66e334506b7f7dcfe68b3f33e30d76f5d778396556553ea0df042091209c70
+- Запиши новый клип 30 сек этой страницы (скролл сверху вниз) с тем же voice-over. Назови `clip5-demo-fallback.mp4`.
 
 ---
 
-### 🎬 Сегмент 6 — Outro (2:45–3:00) — слайд
+### 🎬 КЛИП 6 — Outro (~18 сек)
 
-**Видео:** статика `slides/06-outro.png` 15 сек.
+**Что открыть:** двойной клик на `slides\06-outro.png`. Картинка на весь экран.
 
-**Voice-over (~50 слов = 18 сек):**
+**Что делать:** ничего, картинка стоит.
 
-> «Repo at github-dot-com slash cryptoyasenka slash fhevm-oracle-skill. SKILL-dot-MD is the bounty deliverable. AsyncRevealVault is the Builder Track demo, deployed at the address on screen. BSD three-clause-clear, same license as fhevm-solidity. Drop the file in your project's dot-claude slash skills folder and your agent **stops shipping broken FHEVM oracle code**. Thanks Zama.»
+**Что сказать (~18 сек):**
+
+> «Repo at github-dot-com slash cryptoyasenka slash fhevm-oracle-skill. SKILL-dot-MD is the bounty deliverable. AsyncRevealVault is the Builder Track demo, deployed at the address on screen. BSD three-clause-clear. Drop the file in your project's dot-claude slash skills folder and your agent **stops shipping broken FHEVM oracle code**. Thanks Zama.»
+
+**Запись:** Win+G → Start → говори → Stop → `clip6-outro.mp4`.
 
 ---
+
+### Итог: после раздела 2 у тебя
+
+- 6 файлов в `C:\Users\Yana\Videos\Captures\` (или куда указала Win+G)
+- Переименуй их в `clip1-hook.mp4` … `clip6-outro.mp4` чтобы не запутаться
+- Между клипами в монтаже добавишь короткие слайды (`slides/03-safety.png`, `slides/05-live.png`) — но это уже Раздел 4
 
 ### Запасные фразы если в записи затупила
 
