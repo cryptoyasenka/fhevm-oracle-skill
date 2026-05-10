@@ -805,8 +805,7 @@ export default function Page() {
             return (
               <div
                 key={String(v.id)}
-                className="card vault-row"
-                style={isHidden ? { opacity: 0.4 } : undefined}
+                className={`card vault-row${isHidden ? " vault-row-dismissed" : ""}`}
               >
                 <div className="row" style={{ alignItems: "start" }}>
                   <dl className="kv" style={{ flex: 2 }}>

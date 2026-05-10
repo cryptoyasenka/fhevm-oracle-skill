@@ -256,11 +256,18 @@ button.ghost-btn:hover:not(:disabled) {
   border-color: var(--danger);
   background: rgba(255, 107, 107, 0.08);
 }
-/* Positive variant — restoring something previously dismissed. */
+/* Positive variant — restoring something previously dismissed.
+   Idle: visible green so the user can tell it's the actionable CTA on a
+   dimmed row. Hover: stronger fill. */
+button.ghost-btn.positive {
+  color: var(--ok);
+  border-color: rgba(94, 210, 138, 0.5);
+  background: rgba(94, 210, 138, 0.08);
+}
 button.ghost-btn.positive:hover:not(:disabled) {
   color: var(--ok);
   border-color: var(--ok);
-  background: rgba(94, 210, 138, 0.10);
+  background: rgba(94, 210, 138, 0.18);
 }
 /* Neutral variant — non-destructive utility (Refresh, view-mode toggle). */
 button.ghost-btn.neutral:hover:not(:disabled) {
@@ -351,6 +358,17 @@ button.ghost-btn.neutral:hover:not(:disabled) {
 .kv dd { margin: 0; word-break: break-all; }
 
 .vault-row { margin-top: 12px; }
+
+/* Dismissed (locally hidden) row: dim the data + helper text so it's clearly
+   "set aside", but keep the action buttons (esp. Restore) at full strength
+   so the user can act on the row. opacity on the wrapper would mute the
+   button alpha, which is exactly what we want to avoid. */
+.vault-row-dismissed { background: #0a0c10; }
+.vault-row-dismissed .kv,
+.vault-row-dismissed > p.hint,
+.vault-row-dismissed .row > p.hint { color: rgba(232, 236, 243, 0.40); }
+.vault-row-dismissed .kv dt { color: rgba(138, 147, 166, 0.55); }
+.vault-row-dismissed .pill { opacity: 0.55; }
 .vault-actions {
   display: flex;
   gap: 8px;
