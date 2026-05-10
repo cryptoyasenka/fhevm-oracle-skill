@@ -1,7 +1,7 @@
 # CURRENT — fhevm-oracle-skill
 
-**Last touched:** 2026-05-10 (third-pass polish — senior code review)
-**Status:** Three audit passes complete. First (`576a6bf`): purged fictional APIs in submissions. Second (`155aa50`+`7b773c2`): fixed BUILDER "FIRST line" wording, frontend/README AP-NNN table, stale Vercel directive. Third (`be77687`): contract NatSpec @dev block "FIRST line" → "BEFORE any state write" with parenthetical (matched the inline comment), test docstring `debugger.createDecryptionSignatures` → `publicDecrypt` (matched the real API), `next.config.js` + `.env.example` "NOT vercel-specific" → host-agnostic phrasing. 4/4 tests still pass.
+**Last touched:** 2026-05-10 (fourth-pass polish — judge-eye sweep on video assets)
+**Status:** Four audit passes complete. First (`576a6bf`): purged fictional APIs in submissions. Second (`155aa50`+`7b773c2`): fixed BUILDER "FIRST line" wording, frontend/README AP-NNN table, stale Vercel directive. Third (`be77687`): contract NatSpec @dev block "FIRST line" → "BEFORE any state write" with parenthetical (matched the inline comment), test docstring `debugger.createDecryptionSignatures` → `publicDecrypt` (matched the real API), `next.config.js` + `.env.example` "NOT vercel-specific" → host-agnostic phrasing. Fourth (`2d76979`): VIDEO-VOICEOVER segment 3, VIDEO-INSTRUCTIONS line 50, `scripts/gen_slides.py` strings + regenerated `slides/03-safety.png` and `slides/07-callout-checksig.png` — all rewordings now match contract NatSpec exactly so judge cross-referencing video to contract sees zero contradiction. SKILL.md prescriptive "FIRST" left intact (it's the teaching abstraction, contract honors it in spirit). 4/4 tests still pass.
 
 ## Status
 
@@ -96,6 +96,7 @@ Submission code + docs are clean. Yana's manual run:
 - FHECounter on Etherscan: https://sepolia.etherscan.io/address/0x839A250cC9E5a55C35EB8b47e3E9f0B42d7ad912
 
 ## Commits on `main` (latest first)
+- `2d76979` — docs(video): fourth-pass — script + slides match contract NatSpec ('FIRST line' → 'before any state write')
 - `be77687` — docs: third-pass polish — NatSpec/test header consistency + drop stale Vercel comments
 - `14f7935` — chore: CURRENT.md — second-pass audit complete
 - `7b773c2` — chore(checklist): Phase 4 — mark frontend deploy DONE
