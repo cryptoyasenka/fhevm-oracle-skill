@@ -151,8 +151,14 @@ export default function Page() {
     try {
       const provider = new BrowserProvider(window.ethereum);
       const vault = new Contract(VAULT_ADDRESS!, VAULT_ABI, provider);
+      // Some injected wallets route eth_getLogs through their own RPC
+      // (e.g. rpc.walletconnect.org) which caps the block range at 50K.
+      // Cap the lookback window — the contract was deployed recently, so a
+      // 49K-block window covers ~1 week of Sepolia, plenty for demo vaults.
+      const head = await provider.getBlockNumber();
+      const fromBlock = Math.max(0, head - 49_000);
       const lockedFilter = vault.filters.Locked(undefined, account);
-      const events = (await vault.queryFilter(lockedFilter)).filter(
+      const events = (await vault.queryFilter(lockedFilter, fromBlock, "latest")).filter(
         (e): e is EventLog => "args" in e,
       );
       const list: Vault[] = [];
@@ -188,7 +194,12 @@ export default function Page() {
       const signer = await provider.getSigner();
       const fhevm = await getFhevm();
 
-      const input = fhevm.createEncryptedInput(VAULT_ADDRESS!, account);
+      // viem's strict isAddress (used by relayer-sdk) rejects mixed-case
+      // addresses without a valid EIP-55 checksum — which some injected
+      // wallets return. ethers.getAddress() normalises to checksummed form
+      // and also acts as a final validity guard.
+      const userAddress = ethers.getAddress(account);
+      const input = fhevm.createEncryptedInput(VAULT_ADDRESS!, userAddress);
       input.add64(BigInt(amount));
       input.add256(BigInt(secret));
       const enc = await input.encrypt();
