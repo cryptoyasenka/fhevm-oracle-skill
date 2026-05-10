@@ -18,7 +18,7 @@
 
 ### Long description
 
-> AsyncRevealVault is a minimal, reusable building block for any FHEVM contract that needs to keep a value encrypted on-chain until a specific moment, then reveal it through the KMS oracle. The depositor calls `lock(externalEuint64 amount, externalEuint256 secret, bytes proof, uint256 revealAt)` to store an encrypted amount + secret bound to themselves and the contract. After `revealAt`, anyone can call `triggerReveal(vaultId)`, which submits both ciphertexts to the relayer in a single `FHE.requestDecryption` call. The KMS callback `fulfillReveal` verifies signatures, consumes the request guard, then writes the cleartext.
+> AsyncRevealVault is a minimal, reusable building block for any FHEVM contract that needs to keep a value encrypted on-chain until a specific moment, then reveal it through the KMS oracle. The depositor calls `lock(externalEuint64 amount, externalEuint256 secret, bytes proof, uint256 revealAt)` to store an encrypted amount + secret bound to themselves and the contract. After `revealAt`, anyone can call `triggerReveal(vaultId)`, which flags both ciphertexts for KMS public decryption via `FHE.makePubliclyDecryptable`. An off-chain relayer fetches the cleartext + KMS proof and calls `fulfillReveal(vaultId, cleartexts, proof)`, which runs `FHE.checkSignatures` against the (handles, cleartexts, proof) tuple, flips the replay guard, then writes the cleartext to storage.
 >
 > What this enables, with no extra plumbing:
 >
