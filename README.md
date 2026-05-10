@@ -43,7 +43,8 @@ frontend/
   README.md                    <-- local dev + Vercel deploy guide
 BOUNTY-SUBMISSION.md           <-- pre-filled answers for the Bounty Track form
 BUILDER-SUBMISSION.md          <-- pre-filled answers for the Builder Track form
-VIDEO-SCRIPT.md                <-- 3-min recording script
+.planning/VIDEO-VOICEOVER.md   <-- 3-min recording voice-over (~360 words)
+.planning/VIDEO-INSTRUCTIONS-2026-05-10.md  <-- recording playbook keyed to slides/*.png
 ```
 
 ## Quick start

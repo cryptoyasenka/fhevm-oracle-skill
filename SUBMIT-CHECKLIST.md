@@ -54,7 +54,7 @@ If `npm run deploy:sepolia` fails on gas, top up the deployer address from a Sep
 
 ## Phase 3 — record the 3-min demo (60–90 min)
 
-Open `VIDEO-SCRIPT.md` and follow it segment by segment.
+Open `.planning/VIDEO-INSTRUCTIONS-2026-05-10.md` (recording playbook) and `.planning/VIDEO-VOICEOVER.md` (script). Follow segment by segment.
 
 - [ ] Two screen recordings (window A no-skill, window B with-skill) saved
 - [ ] Spliced into one ≤3:00 cut with on-screen captions
