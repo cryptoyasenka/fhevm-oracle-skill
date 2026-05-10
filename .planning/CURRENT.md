@@ -1,7 +1,7 @@
 # CURRENT — fhevm-oracle-skill
 
-**Last touched:** 2026-05-10 (morning — Yana's live testing pass + Vercel infra fix)
-**Status:** Frontend wallet UX hardened (Disconnect, persistence, listeners, RPC compat fixes). Vercel project repaired (Root Directory `.` → `frontend`, GitHub auto-deploy now wired). Awaiting Yana's on-chain demo + video recording + form submission.
+**Last touched:** 2026-05-10 (afternoon — UX polish iteration with Yana on live frontend)
+**Status:** UX polish round (8 commits today after morning hardening). Frontend cosmetics tightened — vault header simplified, dismissed-row badge moved, navbar Connect button when wallet detached. Awaiting Yana's on-chain demo + video recording + form submission.
 
 ## Status
 
@@ -42,10 +42,18 @@
 - [ ] Submit both forms before 2026-05-11 11:59 UTC
 
 ## Open files
-- Nothing in active edit. All work committed and pushed through `a5d3aac` + this CURRENT.md update.
+- Nothing in active edit. All work committed and pushed through `609ee01` + this CURRENT.md update.
+
+## UX commits today (after morning hardening)
+- `c7122e1` UX audit (9 issues), `30b1af2` wallet pill in navbar, `6120af5` activity-log empty state, `bab4372` Restore button visible, `95027bd` button cluster, `11556fe` Showing-all pill + dismissed badge, `1894a20` simplify vaults header, `609ee01` Connect button in navbar.
+
+## Open UX item
+- Yana said earlier "поле трай ит снова непонятным и перегруженным" — clarification asked but not answered. May resurface after Connect-button feedback. Try-it section has role-play callout + primitive hint + 3 inputs each with label + ?-tooltip + always-on hint — candidates for compaction.
 
 ## Next step (concrete)
-Yana drives. Agent side waits for her morning checklist execution per `.planning/TOMORROW-2026-05-10.md`.
+1. Wait Yana's reaction to navbar Connect (`609ee01`).
+2. If Try-it still flagged, simplify it (drop role-play callout + primitive hint, hide OK-state hints).
+3. Then she runs manual demo: hide id=2,3,4 → Trigger/Fulfill id=1 → fulfill-tx URL → fill BUILDER-SUBMISSION.md → record video → submit forms before 2026-05-11 11:59 UTC.
 
 ## Decisions / constraints
 - Skill scope = NARROW oracle specialist (complementary to Makabeez/fhevm-skill)
