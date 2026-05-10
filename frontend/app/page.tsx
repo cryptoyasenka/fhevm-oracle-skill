@@ -13,6 +13,7 @@ type Vault = {
   id: bigint;
   depositor: string;
   revealAt: number;
+  triggered: boolean;
   revealed: boolean;
   clearAmount?: bigint;
   clearSecret?: bigint;
@@ -161,12 +162,23 @@ export default function Page() {
       const events = (await vault.queryFilter(lockedFilter, fromBlock, "latest")).filter(
         (e): e is EventLog => "args" in e,
       );
+      // Pull RevealRequested events in the same window so we know which vaults
+      // have already had their handles flagged for public decryption — this is
+      // what gates the Fulfill button. Without this we'd let the user call
+      // publicDecrypt before the contract authorised it (the relayer rejects
+      // it with "handles are not allowed for public decryption").
+      const requestedFilter = vault.filters.RevealRequested();
+      const reqEvents = (await vault.queryFilter(requestedFilter, fromBlock, "latest")).filter(
+        (e): e is EventLog => "args" in e,
+      );
+      const triggeredIds = new Set(reqEvents.map((e) => String(e.args.vaultId as bigint)));
       const list: Vault[] = [];
       for (const ev of events) {
         const id = ev.args.vaultId as bigint;
         const revealAt = Number(ev.args.revealAt as bigint);
         const revealed = (await vault.isRevealed(id)) as boolean;
-        const v: Vault = { id, depositor: account, revealAt, revealed };
+        const triggered = triggeredIds.has(String(id));
+        const v: Vault = { id, depositor: account, revealAt, triggered, revealed };
         if (revealed) {
           const [a, s] = (await vault.getClearValues(id)) as [bigint, bigint];
           v.clearAmount = a;
@@ -229,8 +241,14 @@ export default function Page() {
         append(`triggerReveal(${id})…`);
         const tx = await vault.triggerReveal(id);
         await tx.wait();
-        append(`Triggered. Now any client (including this UI) can submit the KMS proof.`);
+        append(`Triggered. Now press Fulfill to fetch the KMS proof and write the cleartext on-chain.`);
         await refreshVaults();
+        // Optimistic flag: if the RPC node hasn't indexed RevealRequested yet
+        // when refreshVaults runs, the on-chain query above might miss it.
+        // We just confirmed the tx, so we know it's true. Re-set after refresh
+        // (functional updater sees the most-recent committed state) so the
+        // Fulfill button enables immediately.
+        setVaults((vs) => vs.map((v) => (v.id === id ? { ...v, triggered: true } : v)));
       } catch (e) {
         append(`Trigger failed: ${(e as Error).message}`);
       } finally {
@@ -390,6 +408,15 @@ export default function Page() {
 
       <section className="card">
         <h2>Try it{vaultConfigured ? "" : " — preview"}</h2>
+        <p className="lede" style={{ marginBottom: 20 }}>
+          You&apos;re about to seal two values on Sepolia. <strong>amount</strong> is a number
+          (think auction bid, vesting amount). <strong>secret</strong> is up to 32 bytes
+          (think a future-dated note, a commit-reveal seed). Both get encrypted in your
+          browser with the KMS public key — the contract stores opaque ciphertexts and
+          can&apos;t read them. After the timer below expires, you&apos;ll come back here to
+          run <em>Trigger</em> and <em>Fulfill</em>; the cleartext lands on-chain via a
+          KMS-signed proof.
+        </p>
         {!vaultConfigured ? (
           <p className="lede">
             The live contract on Sepolia is going up just before the Builder Track
@@ -422,7 +449,7 @@ export default function Page() {
               <p className="hint">Try 60 to see the full round-trip in a minute.</p>
             </div>
             <button onClick={lock} disabled={status === "busy"}>
-              Encrypt + lock
+              Steps 1 + 2 — Encrypt + lock
             </button>
           </div>
         )}
@@ -439,6 +466,8 @@ export default function Page() {
           {vaults.map((v) => {
             const now = Math.floor(Date.now() / 1000);
             const ready = now > v.revealAt;
+            const canTrigger = ready && !v.triggered && !v.revealed;
+            const canFulfill = ready && v.triggered && !v.revealed;
             return (
               <div key={String(v.id)} className="card vault-row">
                 <div className="row" style={{ alignItems: "start" }}>
@@ -449,8 +478,10 @@ export default function Page() {
                     <dd>
                       {v.revealed ? (
                         <span className="pill ok">revealed</span>
+                      ) : v.triggered ? (
+                        <span className="pill live">triggered — fulfill next</span>
                       ) : ready ? (
-                        <span className="pill live">ready</span>
+                        <span className="pill live">timer up — trigger next</span>
                       ) : (
                         <span className="pill">locked</span>
                       )}
@@ -467,21 +498,59 @@ export default function Page() {
                       <>
                         <button
                           className="secondary"
-                          disabled={!ready || status === "busy"}
+                          disabled={!canTrigger || status === "busy"}
                           onClick={() => trigger(v.id)}
+                          title={
+                            !ready
+                              ? "Wait until revealAt"
+                              : v.triggered
+                                ? "Already triggered — go to Fulfill"
+                                : undefined
+                          }
                         >
-                          1. Trigger
+                          3. Trigger
                         </button>
                         <button
-                          disabled={!ready || status === "busy"}
+                          disabled={!canFulfill || status === "busy"}
                           onClick={() => fulfill(v.id)}
+                          title={
+                            !ready
+                              ? "Wait until revealAt"
+                              : !v.triggered
+                                ? "Press Trigger first — Fulfill won't work until the contract has flagged the ciphertexts"
+                                : undefined
+                          }
                         >
-                          2. Fulfill
+                          4. Fulfill
                         </button>
                       </>
                     )}
                   </div>
                 </div>
+                {!v.revealed && (
+                  <p className="hint" style={{ marginTop: 12 }}>
+                    {!ready ? (
+                      <>
+                        <strong>Locked.</strong> The ciphertexts are on-chain but nobody can read
+                        them — not even the contract — until <code>{new Date(v.revealAt * 1000).toLocaleTimeString()}</code>.
+                        Come back then to run steps 3 and 4.
+                      </>
+                    ) : !v.triggered ? (
+                      <>
+                        <strong>Step 3 of 4 — press “Trigger”.</strong> The timer expired, so
+                        <code> triggerReveal()</code> will flag both ciphertexts as publicly
+                        decryptable. One MetaMask transaction.
+                      </>
+                    ) : (
+                      <>
+                        <strong>Step 4 of 4 — press “Fulfill”.</strong> The relayer fetches a
+                        KMS-signed cleartext for those handles, and <code>fulfillReveal()</code>
+                        verifies the signatures on-chain via <code>FHE.checkSignatures</code> and
+                        writes the cleartext below.
+                      </>
+                    )}
+                  </p>
+                )}
               </div>
             );
           })}
