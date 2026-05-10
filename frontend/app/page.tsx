@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { BrowserProvider, Contract, EventLog, ethers } from "ethers";
 import { VAULT_ABI } from "@/lib/vault-abi";
 import { getFhevm } from "@/lib/fhevm";
@@ -28,6 +28,12 @@ export default function Page() {
   const [amount, setAmount] = useState("12345");
   const [secret, setSecret] = useState("0xc0ffee");
   const [delaySec, setDelaySec] = useState("60");
+  // Synchronous click guard. setStatus("busy") schedules a render — between
+  // the click handler and the next render, a fast double-click can fire lock()
+  // twice, both pop a MetaMask confirmation, and you end up with two vaults
+  // for what felt like a single press. A ref flips synchronously so the
+  // second call returns immediately.
+  const inFlight = useRef(false);
 
   const onSepolia = chainId === SEPOLIA_CHAIN_ID;
   const vaultConfigured = !!VAULT_ADDRESS && VAULT_ADDRESS !== ethers.ZeroAddress;
@@ -199,6 +205,8 @@ export default function Page() {
 
   const lock = useCallback(async () => {
     if (!vaultConfigured || !account) return;
+    if (inFlight.current) return;
+    inFlight.current = true;
     setStatus("busy");
     try {
       append(`Encrypting amount=${amount}, secret=${secret}…`);
@@ -228,11 +236,14 @@ export default function Page() {
       append(`Lock failed: ${(e as Error).message}`);
     } finally {
       setStatus("idle");
+      inFlight.current = false;
     }
   }, [account, amount, secret, delaySec, vaultConfigured, append, refreshVaults]);
 
   const trigger = useCallback(
     async (id: bigint) => {
+      if (inFlight.current) return;
+      inFlight.current = true;
       setStatus("busy");
       try {
         const provider = new BrowserProvider(window.ethereum!);
@@ -253,6 +264,7 @@ export default function Page() {
         append(`Trigger failed: ${(e as Error).message}`);
       } finally {
         setStatus("idle");
+        inFlight.current = false;
       }
     },
     [append, refreshVaults],
@@ -260,6 +272,8 @@ export default function Page() {
 
   const fulfill = useCallback(
     async (id: bigint) => {
+      if (inFlight.current) return;
+      inFlight.current = true;
       setStatus("busy");
       try {
         const provider = new BrowserProvider(window.ethereum!);
@@ -282,6 +296,7 @@ export default function Page() {
         append(`Fulfill failed: ${(e as Error).message}`);
       } finally {
         setStatus("idle");
+        inFlight.current = false;
       }
     },
     [append, refreshVaults],
