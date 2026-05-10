@@ -6,8 +6,10 @@
 
 Перед записью используй упрощённый скрипт:
 - **`.planning/VIDEO-VOICEOVER-SIMPLE.md`** — короткие предложения, фонетические подсказки для сложных слов, темп 88 wpm (медленно для тебя — комфортно)
-- **`cue-cards/seg1..seg6.png`** — открой на втором мониторе и читай прямо с них (телесуфлёр, крупный шрифт, акценты жёлтым)
+- **`cue-cards/seg1..seg4.png` + `seg5a-demo-lock.png` + `seg5b-demo-reveal.png` + `seg6-outro.png`** — открой на втором мониторе и читай прямо с них (телесуфлёр). Сегмент 5 разбит на 5a (lock, 20s) и 5b (reveal, 25s): после "Done" в 5a ждёшь 60s и открываешь 5b
 - **`video-clips/clip1-hook-static.mp4` / `clip2-problem-static.mp4` / `clip6-outro-static.mp4`** — уже готовые MP4 нужной длительности (22s/35s/18s) для статичных сегментов 1, 2, 6. В CapCut кладёшь их как видеоряд, поверх своя голосовая запись. Win+G для этих сегментов **не нужен**.
+- **`thumbnail/youtube-1280x720.png`** — YouTube custom thumbnail. Загрузи при upload (Video details → Thumbnail → Upload thumbnail).
+- **Etherscan screenshot** — сделай сама в момент upload: открой `https://sepolia.etherscan.io/tx/0xbb66e334506b7f7dcfe68b3f33e30d76f5d778396556553ea0df042091209c70` в браузере, Win+Shift+S → выдели страницу. Понадобится как backup для сегмента 5 если KMS callback залипнет.
 - Старый `VIDEO-VOICEOVER.md` оставила как reference, но **читай из SIMPLE-версии**
 
 Что осталось записать через Win+G:
