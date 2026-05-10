@@ -12,19 +12,19 @@ FHEVM lets you compute on **encrypted data** on Ethereum. But the moment your co
 
 ## Сегмент 2 (0:20–0:55) — The five failure modes
 
-Without context, an agent will skip checkSignatures and let anyone fake a decryption. It will mismatch handle order. It will write cleartext **before consuming the request guard**, opening replay attacks. It will assume a sync decrypt that doesn't exist on mainnet. Or it will trigger reveal at exactly block-dot-timestamp equals revealAt — off by one. The skill enumerates **all ten anti-patterns** as muscle memory.
+Without context, an agent will skip checkSignatures and let anyone fake a decryption. It will mismatch handle order against the abi-decode tuple. It will write cleartext **before flipping the replay guard**, so the same KMS proof can be re-submitted. It will assume a sync decrypt that doesn't exist on mainnet. Or it will trigger reveal at exactly block-dot-timestamp equals revealAt — off by one. The skill enumerates **all ten anti-patterns** as muscle memory.
 
 ---
 
 ## Сегмент 3 (0:55–1:30) — What the skill produces
 
-This is AsyncRevealVault — the reference contract written from the skill. Notice: checkSignatures is the **very first line** of the callback. The request guard is deleted and the outstanding request reset **before any cleartext write**. The timestamp check is a **strict greater-than**. ACL discipline is preserved across every state mutation. Two hundred and twenty lines, one file.
+This is AsyncRevealVault — the reference contract written from the skill. Notice: checkSignatures is the **very first line** of the callback. The replay flag is set to true **before any cleartext write** — re-submitting the same proof reverts at AlreadyRevealed. The timestamp check is a **strict greater-than**. ACL discipline is preserved across every state mutation. Two hundred and twenty lines, one file.
 
 ---
 
 ## Сегмент 4 (1:30–2:00) — Tests
 
-Four Hardhat mock-mode tests drill the same anti-patterns the skill enumerates: signature absence, request guard not consumed, off-by-one finality, ACL leak. A contract written from the skill **passes them by construction**.
+Four Hardhat mock-mode tests drill the same anti-patterns the skill enumerates: signature absence, replay-after-success, off-by-one finality, and the canonical happy path. A contract written from the skill **passes them by construction**.
 
 ---
 
@@ -34,7 +34,7 @@ Now the live contract on Sepolia. I'm encrypting a number — **sixty-three**. T
 
 Sixty seconds pass.
 
-I trigger reveal. The vault submits the ciphertext to the KMS oracle in a single requestDecryption call. The KMS callback verifies signatures, consumes the guard, then writes the cleartext. **Sixty-three.** The number was encrypted on chain until the timer expired.
+I trigger reveal. The vault flags both ciphertexts as publicly decryptable. The relayer fetches the KMS-signed cleartext and calls fulfillReveal. The callback verifies signatures, flips the replay guard, then writes the cleartext. **Sixty-three.** The number was encrypted on chain until the timer expired.
 
 ---
 
