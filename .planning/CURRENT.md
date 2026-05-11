@@ -1,6 +1,33 @@
 # CURRENT — fhevm-oracle-skill
 
-**Last touched:** 2026-05-11 12:46 — v2 для clip3 + clip5a + clip5b готовы, ждут утреннего ревью Yana
+**Last touched:** 2026-05-11 14:25 — обе формы заполнены через AgentX Profile 1, ждут только YouTube URL + Submit
+
+## 🆕 2026-05-11 14:25 — ОБЕ ФОРМЫ ЗАПОЛНЕНЫ (Yana только Submit)
+
+**Bounty form** (tab `277E42CC` в AgentX Profile 1):
+- Project name: `fhevm-oracle`
+- Description: ✓ filled
+- GitHub URL: ✓ filled
+- Leaderboard: `Yes`
+- Email opt-in: ✓ checked (была отмечена ранее)
+- **Video pitch: ПУСТО** ← вставь YouTube URL и нажми Submit
+
+**Builder form** (tab `E715C4D5` в AgentX Profile 1):
+- Project name: `AsyncRevealVault`
+- Description: ✓ filled (универсальный time-lock primitive)
+- Smart contract code: GitHub repo URL ✓
+- Frontend code: GitHub `/tree/main/frontend` ✓
+- Demo website: `https://fhevm-oracle-frontend.vercel.app` ✓
+- Category: `Other` + "Reusable FHEVM primitive (building block for auctions, vesting, dead-man switches)" — **поменяй на A "Onchain Finance" или D "FHE integration" если предпочитаешь**
+- Leaderboard: `Yes, with my GitHub and X profile`
+- Email opt-in: ✗ unchecked (твой выбор)
+- **Video pitch: ПУСТО** ← вставь YouTube URL и нажми Submit
+
+**Wallet `0xFf61c3BcaE3AC9Cd7F08671dCAfB2e37A15849f5`** уже в BOUNTY-SUBMISSION.md + BUILDER-SUBMISSION.md (commit `d700c6e`) как запись — на самих веб-формах поля wallet НЕТ, Zama запросит отдельно после approve.
+
+После твоего сабмита: проверь email — Zama пришлёт подтверждение с request на wallet если оно ему нужно.
+
+## 🆕 2026-05-11 v2 (critical-only scope)
 
 ## 🆕 2026-05-11 v2 (critical-only scope)
 
