@@ -255,59 +255,179 @@ def draw_full_file_frame(
     label_top: str,
     label_bottom: str,
 ) -> Image.Image:
-    """Zoomed-out frame: entire file fits, with three highlight markers."""
+    """Zoomed-out 'code map' frame: minimap-style bars per line + callout cards.
+
+    Each line becomes a thin colored bar (no readable text). Bar width is
+    proportional to non-whitespace content, color comes from the first token.
+    The three highlighted lines get full-width yellow fill plus a labeled
+    callout card on the right side pointing to them.
+    """
     img = Image.new("RGB", (W, H), BG)
     d = ImageDraw.Draw(img)
 
-    # Titlebar
+    # Titlebar (VS Code style)
     titlebar_h = 60
     d.rectangle([0, 0, W, titlebar_h], fill=(45, 45, 48))
     f_title = font(26, mono=False)
-    d.text((30, 16), "AsyncRevealVault.sol  —  220 lines, one file",
+    d.text((30, 16), "AsyncRevealVault.sol  —  the whole file at a glance",
            font=f_title, fill=(212, 212, 212))
     for ix, col in enumerate([(255, 95, 86), (255, 189, 46), (39, 201, 63)]):
         cx = W - 30 - ix * 30
         d.ellipse([cx - 8, 22, cx + 8, 38], fill=col)
 
-    # Label strip
-    d.rectangle([0, titlebar_h, W, titlebar_h + 50], fill=LABEL_BG)
+    # Top label strip
+    label_strip_h = 60
+    d.rectangle([0, titlebar_h, W, titlebar_h + label_strip_h], fill=LABEL_BG)
     if label_top:
         f_label = font(34, bold=True, mono=False)
         lw, _ = measure(d, label_top, f_label)
-        d.text(((W - lw) // 2, titlebar_h + 8), label_top, font=f_label, fill=HIGHLIGHT)
+        d.text(((W - lw) // 2, titlebar_h + 12), label_top, font=f_label, fill=HIGHLIGHT)
 
-    # Tiny code (one column tight)
+    # Layout: left = code map, right = callout cards
+    map_top = titlebar_h + label_strip_h + 30
+    map_bottom = H - 110
+    map_left = 220
+    map_right = 900
+    map_h = map_bottom - map_top
     total_lines = len(src_lines)
-    code_top = 130
-    code_bottom = H - 80
-    code_left = 200
-    code_right = W - 200
-    line_h = (code_bottom - code_top) / total_lines
-    f_tiny = font(11, mono=True)
-    gutter_w = code_left - 50
+    slot_h = map_h / total_lines  # ≈ 4.2px per line — bars only, no text
 
-    for i, line in enumerate(src_lines, start=1):
-        y = code_top + (i - 1) * line_h
-        if i in highlight_lines:
-            d.rectangle([gutter_w, y - 1, code_right, y + line_h + 1], fill=ACCENT_BG)
-        # gutter
-        d.text((gutter_w - 30, y), str(i), font=f_tiny, fill=GUTTER)
-        tokens = tokenize_line(line)
-        x = code_left
-        for tok, color in tokens:
-            tw, _ = measure(d, tok, f_tiny)
-            fg = HIGHLIGHT if i in highlight_lines else color
-            d.text((x, y), tok, font=f_tiny, fill=fg)
-            x += tw
-            if x > code_right:
+    # Gutter labels: every 20 lines, plus the highlights
+    f_gutter = font(13, mono=True)
+    gutter_marks = set(range(1, total_lines + 1, 20)) | highlight_lines | {total_lines}
+    for i in gutter_marks:
+        y = map_top + (i - 1) * slot_h
+        col = HIGHLIGHT if i in highlight_lines else GUTTER
+        text = str(i)
+        tw, _ = measure(d, text, f_gutter)
+        d.text((map_left - 12 - tw, y - 7), text, font=f_gutter, fill=col)
+
+    # Vertical gutter divider
+    d.line([(map_left - 6, map_top), (map_left - 6, map_bottom)],
+           fill=(60, 60, 60), width=2)
+
+    # Color by leading token kind
+    def line_color(line: str):
+        s = line.lstrip()
+        if not s:
+            return None
+        if s.startswith("//") or s.startswith("/*") or s.startswith("*"):
+            return COMMENT
+        first = ""
+        for ch in s:
+            if ch.isalpha() or ch == "_":
+                first += ch
+            else:
                 break
+        if first in KEYWORDS:
+            return KEYWORD
+        if first in TYPES:
+            return TYPE
+        return FG
+
+    # Bars
+    map_width = map_right - map_left
+    max_content = 80  # chars mapped to full width
+    for i, line in enumerate(src_lines, start=1):
+        y0 = map_top + (i - 1) * slot_h
+        y1 = y0 + slot_h - 0.6  # tiny gap between bars
+
+        if i in highlight_lines:
+            # Full-width bright yellow highlight
+            d.rectangle([map_left - 6, y0, map_right + 6, y1],
+                        fill=HIGHLIGHT)
+            continue
+
+        c = line_color(line)
+        if c is None:
+            continue
+        content_len = len(line.rstrip()) - (len(line) - len(line.lstrip()))
+        # Dim the color so highlights pop
+        dim = tuple(int(v * 0.55) for v in c)
+        indent_chars = len(line) - len(line.lstrip())
+        indent_px = min(indent_chars, 20) / 80 * map_width
+        bar_w = min(content_len, max_content) / max_content * (map_width - indent_px)
+        d.rectangle([map_left + indent_px, y0, map_left + indent_px + bar_w, y1],
+                    fill=dim)
+
+    # Right-side callout cards: explicit mapping by line number
+    card_left = 1000
+    card_right = W - 60
+    card_w = card_right - card_left
+    card_h = 130
+    LINE_MAP = {
+        111: ("AP-010", "Strict time check",
+              "if (block.timestamp <= revealAt) revert\nstrict >, not >=  ·  exact-second is too early"),
+        158: ("AP-001", "Signature check FIRST",
+              "FHE.checkSignatures(handles, cleartext, proof)\nbefore state  ·  reverts forged callbacks"),
+        161: ("AP-002", "Replay flag BEFORE value",
+              "v.revealed = true  ·  v.amountClear = a\nsame proof can never run twice"),
+    }
+    cards = []
+    for i in sorted(highlight_lines):
+        tag, title, sub = LINE_MAP.get(
+            i, (f"L{i}", "Highlighted line", "")
+        )
+        cards.append((i, tag, title, sub))
+
+    # Stack cards vertically with anchors on the left
+    total_card_h = len(cards) * card_h + (len(cards) - 1) * 30
+    start_y = map_top + (map_h - total_card_h) / 2
+    f_tag = font(22, bold=True, mono=False)
+    f_card_title = font(28, bold=True, mono=False)
+    f_card_sub = font(20, mono=True)
+    f_badge = font(16, bold=True, mono=False)
+    bh = measure(d, "L999", f_badge)[1]
+    min_badge_gap = bh + 14  # vertical distance to prevent overlap
+
+    # Compute non-overlapping badge Y positions: keep close ones nudged apart
+    raw_badge_ys = [map_top + (ln - 0.5) * slot_h for ln, *_ in cards]
+    badge_ys = list(raw_badge_ys)
+    for k in range(1, len(badge_ys)):
+        if badge_ys[k] - badge_ys[k - 1] < min_badge_gap:
+            badge_ys[k] = badge_ys[k - 1] + min_badge_gap
+
+    for idx, (line_no, tag, title, sub) in enumerate(cards):
+        cy = start_y + idx * (card_h + 30)
+        # Card background
+        d.rectangle([card_left, cy, card_right, cy + card_h], fill=LABEL_BG)
+        d.rectangle([card_left, cy, card_left + 6, cy + card_h], fill=HIGHLIGHT)
+        # Tag
+        d.text((card_left + 22, cy + 14), tag, font=f_tag, fill=HIGHLIGHT)
+        # Title
+        d.text((card_left + 22, cy + 44), title, font=f_card_title, fill=FG)
+        # Sub (two-line code hint)
+        for j, sub_line in enumerate(sub.split("\n")):
+            d.text((card_left + 22, cy + 80 + j * 24),
+                   sub_line, font=f_card_sub, fill=(200, 200, 200))
+        # Connector: horizontal from bar -> elbow -> card edge
+        bar_y = map_top + (line_no - 0.5) * slot_h
+        card_y = cy + card_h / 2
+        elbow_x = (map_right + card_left) / 2 + idx * 12  # stagger to avoid overlap
+        d.line([(map_right + 6, bar_y), (elbow_x, bar_y)],
+               fill=HIGHLIGHT, width=2)
+        d.line([(elbow_x, bar_y), (elbow_x, card_y)],
+               fill=HIGHLIGHT, width=2)
+        d.line([(elbow_x, card_y), (card_left, card_y)],
+               fill=HIGHLIGHT, width=2)
+        # Line-number badge nudged to avoid stack overlap
+        badge_text = f"L{line_no}"
+        bw, _ = measure(d, badge_text, f_badge)
+        bx = map_right + 14
+        by = badge_ys[idx] - bh / 2 - 4
+        # If we nudged this badge off its bar, draw a tiny leader to the real bar
+        if abs(badge_ys[idx] - bar_y) > 2:
+            d.line([(bx - 8, badge_ys[idx]), (map_right + 6, bar_y)],
+                   fill=HIGHLIGHT, width=1)
+        d.rectangle([bx - 6, by - 4, bx + bw + 6, by + bh + 4], fill=HIGHLIGHT)
+        d.text((bx, by), badge_text, font=f_badge, fill=(20, 20, 20))
 
     # Bottom label
     if label_bottom:
-        d.rectangle([0, H - 60, W, H], fill=LABEL_BG)
+        d.rectangle([0, H - 80, W, H], fill=LABEL_BG)
         f_label_small = font(24, mono=False)
         lw, _ = measure(d, label_bottom, f_label_small)
-        d.text(((W - lw) // 2, H - 45), label_bottom, font=f_label_small, fill=FG)
+        d.text(((W - lw) // 2, H - 55), label_bottom, font=f_label_small, fill=FG)
 
     return img
 
@@ -407,7 +527,7 @@ def render():
         encoding="utf-8",
     )
 
-    out_mp4 = OUT_DIR / "clip3-contract-static.mp4"
+    out_mp4 = OUT_DIR / "clip3-contract-v2.mp4"
     cmd = [
         "ffmpeg", "-y",
         "-f", "concat",
@@ -426,4 +546,4 @@ def render():
 
 if __name__ == "__main__":
     render()
-    print("\nDone. Drop video-clips/clip3-contract-static.mp4 into CapCut.")
+    print("\nDone. Drop video-clips/clip3-contract-v2.mp4 into CapCut.")
