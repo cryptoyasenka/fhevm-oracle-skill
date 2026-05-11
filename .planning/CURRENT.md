@@ -1,8 +1,41 @@
 # CURRENT — fhevm-oracle-skill
 
-**Last touched:** 2026-05-11 14:25 — обе формы заполнены через AgentX Profile 1, ждут только YouTube URL + Submit
+**Last touched:** 2026-05-11 14:55 — ✅ ОБЕ ФОРМЫ ПОДАНЫ. Проект завершён.
 
-## 🆕 2026-05-11 14:25 — ОБЕ ФОРМЫ ЗАПОЛНЕНЫ (Yana только Submit)
+**Status: SUBMITTED** (Bounty + Builder) до дедлайна 14:59 Kyiv.
+
+## ✅ 2026-05-11 14:55 — ПОДАНО
+
+- **Bounty Track:** submitted. Confirmation: "Thank you! Your project has been successfully submitted to the Zama Developer Program."
+- **Builder Track:** submitted. Confirmation: "Thank you! Your project has been successfully submitted to the Zama Developer Program - Builder Track."
+- **Video:** https://youtu.be/7_BNrekEu9Y (YouTube unlisted)
+- **Submitter:** yamihmih@gmail.com / GitHub `cryptoyasenka` / X `@yasenka244`
+
+### Что дальше (анонс результатов)
+- Zama в форме подтверждения: "We will review all submissions after the submission deadline and announce winning projects on the Zama website and X in the following weeks."
+- Деадлайн закрылся **2026-05-11 11:59 UTC**. Результаты ожидать **2-4 недели** = примерно **конец мая — середина июня 2026**.
+- Каналы анонса:
+  - Zama website blog: https://www.zama.ai/blog
+  - X: @zama_fhe (https://x.com/zama_fhe)
+  - Возможно прямой email на yamihmih@gmail.com от Zama (если выиграли — точно)
+
+### Wallet — НЕ был в форме
+В live web-формах Zama **поля wallet НЕТ**. Wallet `0xFf61c3BcaE3AC9Cd7F08671dCAfB2e37A15849f5` зафиксирован в BOUNTY-SUBMISSION.md + BUILDER-SUBMISSION.md (commit `d700c6e`) на случай если Zama запросит. Если выиграешь — они напишут на email с запросом на адрес для cUSDT prize. Подготовь к тому моменту тот же `0xFf61c3BcaE3AC9Cd7F08671dCAfB2e37A15849f5`.
+
+### Финальный submission snapshot
+| Поле | Bounty | Builder |
+|---|---|---|
+| Project name | fhevm-oracle | AsyncRevealVault |
+| Description | filled (~131 chars) | filled (~284 chars) |
+| GitHub | github.com/cryptoyasenka/fhevm-oracle-skill | github.com/cryptoyasenka/fhevm-oracle-skill |
+| Frontend code | — | github.com/.../tree/main/frontend |
+| Demo website | — | fhevm-oracle-frontend.vercel.app |
+| Video pitch | https://youtu.be/7_BNrekEu9Y | https://youtu.be/7_BNrekEu9Y |
+| Category | (n/a) | Other → "Reusable FHEVM primitive (building block for auctions, vesting, dead-man switches)" |
+| Leaderboard | Yes | Yes, with my GitHub and X profile |
+| Email opt-in | ✓ | ✗ |
+
+## 🆕 2026-05-11 14:25 — ОБЕ ФОРМЫ ЗАПОЛНЕНЫ (Yana только Submit) — DONE
 
 **Bounty form** (tab `277E42CC` в AgentX Profile 1):
 - Project name: `fhevm-oracle`
