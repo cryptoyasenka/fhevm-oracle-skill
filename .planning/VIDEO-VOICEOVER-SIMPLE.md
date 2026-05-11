@@ -1,53 +1,45 @@
-# Voice-over SIMPLE — fhevm-oracle (≈220 слов, ≈2:29)
+# Voice-over SIMPLE — fhevm-oracle (≈260 слов, ≈2:54)
 
 > **Цель:** простой английский, короткие предложения, минимум сложных кластеров.
 > Каждое предложение ≤8 слов. Темп **медленный** — 85–100 wpm.
 > Голос Yana, не TTS (Zama disqualifying для AI voice).
 > Жирным **акцент** (повышай голос на 1 такт).
->
-> **Перед записью прочитай вслух 3 раза**, отметь карандашом места где спотыкаешься,
-> там сделаешь паузу длиной 0.3 сек — это нормально.
 
 ---
 
-## Произношение сложных слов (фонетика английскими буквами)
+## Произношение сложных слов
 
 | Слово | Произнеси как | Заметка |
 |---|---|---|
-| FHEVM | **«ef eitch ee vee em»** | По буквам, не как слово |
+| FHEVM | **«ef eitch ee vee em»** | По буквам |
 | Sepolia | **«se-PO-lee-a»** | Ударение на PO |
-| AsyncRevealVault | **«a-sink ri-VEEL vawlt»** | 3 слова, не одно |
+| AsyncRevealVault | **«a-sink ri-VEEL vawlt»** | 3 слова |
 | SDK | **«es-dee-kay»** | По буквам |
 | BSD | **«bee-es-dee»** | По буквам |
 | oracle | **«OR-uh-kul»** | Ударение на OR |
-| signature | **«SIG-na-cher»** | «cher» как в «teacher» |
+| signature | **«SIG-na-cher»** | «cher» как в teacher |
 | Hardhat | **«HARD-hat»** | Два слова |
-| MetaMask | **«MET-a-mask»** | Пауза в середине |
-| Ethereum | избегаем — заменили на «on chain» | |
 | crypto-yasenka | **«KRIP-to ya-SEN-ka»** | Дефис = микропауза |
 | github | **«GIT-hab»** | Не «JEE-thab» |
 
 ---
 
-## Структура (6 клипов, clip4 dropped)
+## Структура (7 клипов = 7 cue-cards)
 
-| # | Клип | Длит. | Слов |
-|---|---|---|---|
-| 1 | clip1-hook-static | 22s | 36 |
-| 2 | clip2-problem-static | 35s | 49 |
-| 3 | clip3-contract-v2 (cropped) | 29s | 45 |
-| 4 | clip5a-demo-v2 | 20s | 28 |
-| 5 | clip5b-reveal-v2 | 25s | 36 |
-| 6 | clip6-outro-static | 18s | 30 |
-| | **Total** | **2:29** | **224** |
-
-Средний темп: 224 слов / 149 сек ≈ **90 wpm** — медленный, удобный.
+| # | Cue card | Видео | Длит. | Слов |
+|---|---|---|---|---|
+| 1 | seg1-hook-v2 | clip1-hook-static | 22s | 36 |
+| 2 | seg2-problem-v2 | clip2-problem-static | 35s | 49 |
+| 3 | seg3-contract-v2 | clip3-contract-v2 (cropped) | 29s | 46 |
+| 4 | seg4-tests-v2 | clip4-tests-static | 25s | 30 |
+| 5 | seg5-demo-lock-v2 | clip5a-demo-v2 | 20s | 28 |
+| 6 | seg6-demo-reveal-v2 | clip5b-reveal-v2 | 25s | 36 |
+| 7 | seg7-outro-v2 | clip6-outro-static | 18s | 30 |
+| | | **Total** | **2:54** | **255** |
 
 ---
 
-## Сегмент 1 (0:00–0:22) — Hook | 22s
-
-> Видео: clip1-hook-static.mp4
+## Сегмент 1 (0:00–0:22) — Hook | 22s | clip1 + seg1
 
 «**F H E V M**.
 It keeps your data secret.
@@ -58,9 +50,7 @@ Plus a live contract on **Sepolia**.»
 
 ---
 
-## Сегмент 2 (0:22–0:57) — The problem | 35s
-
-> Видео: clip2-problem-static.mp4
+## Сегмент 2 (0:22–0:57) — Problem | 35s | clip2 + seg2
 
 «AI agents skip the **signature check**.
 So **fake data passes**.
@@ -72,9 +62,7 @@ The skill teaches all **ten traps**.»
 
 ---
 
-## Сегмент 3 (0:57–1:26) — The contract | 29s
-
-> Видео: clip3-contract-v2.mp4 (обрезан с 35s до 29s, без zoom-out на minimap)
+## Сегмент 3 (0:57–1:26) — Contract | 29s | clip3-v2 + seg3
 
 «This is **a-sink ri-VEEL vawlt**.
 The demo contract from the skill.
@@ -82,16 +70,23 @@ The signature check runs **first**.
 Only small input checks come before.
 The replay flag goes up **before** the value goes in.
 So the same proof can not run twice.
-The time check uses **greater than**, not equal.
-**Four Hardhat tests pass.**»
-
-⚠️ Последнее предложение — компенсация за выкинутый clip4 (тесты). Произнеси с акцентом.
+The time check uses **greater than**, not equal.»
 
 ---
 
-## Сегмент 4 (1:26–1:46) — Lock demo | 20s
+## Сегмент 4 (1:26–1:51) — Tests | 25s | clip4 + seg4
 
-> Видео: clip5a-demo-v2.mp4
+«Four Hardhat tests run in mock mode.
+They cover the same traps.
+**Missing** signature.
+**Replay** attack.
+**Time** off by one.
+And the happy path.
+The skill contract **passes them all**.»
+
+---
+
+## Сегмент 5 (1:51–2:11) — Live demo: LOCK | 20s | clip5a-v2 + seg5
 
 «Now the live demo on **Sepolia**.
 I lock the number **sixty three**.
@@ -101,9 +96,7 @@ Lock. Sign. **Done.**»
 
 ---
 
-## Сегмент 5 (1:46–2:11) — Reveal demo | 25s
-
-> Видео: clip5b-reveal-v2.mp4
+## Сегмент 6 (2:11–2:36) — Live demo: REVEAL | 25s | clip5b-v2 + seg6
 
 «Sixty seconds pass.
 I trigger the reveal.
@@ -115,9 +108,7 @@ The number stayed secret until the timer.»
 
 ---
 
-## Сегмент 6 (2:11–2:29) — Outro | 18s
-
-> Видео: clip6-outro-static.mp4
+## Сегмент 7 (2:36–2:54) — Outro | 18s | clip6 + seg7
 
 «Repo at **GIT-hab** dot com slash **KRIP-to ya-SEN-ka** slash f h e v m oracle skill.
 The skill file for the **bounty**.
@@ -127,18 +118,8 @@ Thanks Zama.»
 
 ---
 
-## Запасные фразы (если затупила)
+## Запасные фразы
 
 - «Same prompt, correct contract.»
 - «The skill teaches the safe pattern.»
 - «One file, ten traps, zero bugs.»
-
----
-
-## Что изменилось от v1 скрипта
-
-| Было | Стало | Причина |
-|---|---|---|
-| Total 3:00, 7 сегментов | Total 2:29, 6 сегментов | clip4 (Hardhat tests, 25s) выкинут из таймлайна |
-| Сегмент 3 = 35s, кончался «Two hundred twenty lines. One file.» | Сегмент 3 = 29s, кончается «Four Hardhat tests pass» | clip3-v2 обрезан до 29s (без minimap zoom-out); компенсируем выкинутый clip4 одной фразой про тесты |
-| Сегмент 5 = 45s одним блоком | Сегмент 5a (lock, 20s) + 5b (reveal, 25s) разделены | Соответствует двум клипам clip5a-v2 + clip5b-v2 |

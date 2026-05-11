@@ -1,16 +1,18 @@
 """
-Generate v2 teleprompter cue cards for the 2:29 final cut.
+Generate v2 teleprompter cue cards for the final cut.
 
-Differences from gen_cue_cards.py:
-- 6 cards instead of 7 (clip4 tests segment dropped from timeline)
-- seg3 (contract) shortened from 35s to 29s; closer is "Four Hardhat tests pass"
-  (compensates for the removed clip4 messaging)
-- segments renumbered: original seg5a/5b → seg4/seg5; seg6 stays
-- mouse-cue hints removed from seg3 (clip3-v2 is fully pre-rendered,
-  no live VS Code navigation needed)
+Aligns 1:1 with the 7-clip timeline (clip3 cropped to 29s, all others full):
+  clip1-hook-static (22s) → seg1-hook-v2
+  clip2-problem-static (35s) → seg2-problem-v2
+  clip3-contract-v2 (29s) → seg3-contract-v2
+  clip4-tests-static (25s) → seg4-tests-v2
+  clip5a-demo-v2 (20s) → seg5-demo-lock-v2
+  clip5b-reveal-v2 (25s) → seg6-demo-reveal-v2
+  clip6-outro-static (18s) → seg7-outro-v2
+Total: 174s = 2:54
 
 Run:    python scripts/gen_cue_cards_v2.py
-Output: cue-cards/seg1-hook-v2.png .. seg6-outro-v2.png
+Output: cue-cards/seg{1..7}-*-v2.png
 """
 
 from __future__ import annotations
@@ -91,12 +93,24 @@ SEGMENTS = [
             ("The replay flag goes up BEFORE the value.", "BEFORE"),
             ("So the same proof can not run twice.", None),
             ("The time check uses GREATER THAN, not equal.", "GREATER THAN"),
-            ("FOUR HARDHAT TESTS PASS.", "FOUR HARDHAT TESTS PASS"),
         ],
-        "clip3-v2 уже готов, мышкой ничего не делаешь — просто читай",
+        "clip3-v2 предрендерен — просто читай, мышкой ничего",
     ),
     (
-        "seg4-demo-lock-v2", "4 — LIVE DEMO (lock)", "20 sec  ·  1:26–1:46",
+        "seg4-tests-v2", "4 — TESTS", "25 sec  ·  1:26–1:51",
+        [
+            ("Four Hardhat tests run in mock mode.", None),
+            ("They cover the same traps.", None),
+            ("MISSING signature.", "MISSING"),
+            ("REPLAY attack.", "REPLAY"),
+            ("TIME off by one.", "TIME"),
+            ("And the happy path.", None),
+            ("The skill contract PASSES THEM ALL.", "PASSES THEM ALL"),
+        ],
+        "очень медленно, 72 wpm — паузы между MISSING / REPLAY / TIME",
+    ),
+    (
+        "seg5-demo-lock-v2", "5 — LIVE DEMO (lock)", "20 sec  ·  1:51–2:11",
         [
             ("Now the live demo on SEPOLIA.", "SEPOLIA"),
             ("I lock the number SIXTY THREE.", "SIXTY THREE"),
@@ -106,10 +120,10 @@ SEGMENTS = [
             ("Sign.", "Sign"),
             ("Done.", "Done"),
         ],
-        "после Done — открываешь cue card 5",
+        "после Done — открываешь карточку 6 (reveal)",
     ),
     (
-        "seg5-demo-reveal-v2", "5 — LIVE DEMO (reveal)", "25 sec  ·  1:46–2:11",
+        "seg6-demo-reveal-v2", "6 — LIVE DEMO (reveal)", "25 sec  ·  2:11–2:36",
         [
             ("Sixty seconds pass.", None),
             ("I trigger the reveal.", "trigger"),
@@ -122,7 +136,7 @@ SEGMENTS = [
         "финал демо — улыбка в голос",
     ),
     (
-        "seg6-outro-v2", "6 — OUTRO", "18 sec  ·  2:11–2:29",
+        "seg7-outro-v2", "7 — OUTRO", "18 sec  ·  2:36–2:54",
         [
             ("Repo at GIT-hab dot com", "GIT-hab"),
             ("slash KRIP-to ya-SEN-ka", "KRIP-to ya-SEN-ka"),
