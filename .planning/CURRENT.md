@@ -12,11 +12,18 @@
 - **Etherscan screenshot** — сделай сама в момент upload: открой `https://sepolia.etherscan.io/tx/0xbb66e334506b7f7dcfe68b3f33e30d76f5d778396556553ea0df042091209c70` в браузере, Win+Shift+S → выдели страницу. Понадобится как backup для сегмента 5 если KMS callback залипнет.
 - Старый `VIDEO-VOICEOVER.md` оставила как reference, но **читай из SIMPLE-версии**
 
-Что осталось записать через Win+G:
-- Сегмент 4 (npx hardhat test в терминале)
-- Сегмент 5 (frontend демо + MetaMask)
+**ВСЕ ВИДЕО-КЛИПЫ ГОТОВЫ** — Win+G не нужен совсем. Yana только пишет голос поверх в CapCut.
 
-Сегмент 3 теперь — сгенерированный VS-Code-style клип с программными жёлтыми подсветками на 158/161/111 и зум-аут в финале. Видео ровно 35s, 1080p30. Полностью под voice-over из `VIDEO-VOICEOVER-SIMPLE.md` сегмент 3.
+Готовые MP4 в `video-clips/`:
+- `clip1-hook-static.mp4` (22s) — слайд 01 hero
+- `clip2-problem-static.mp4` (35s) — слайд 02 anti-patterns
+- `clip3-contract-static.mp4` (35s) — VS-Code AsyncRevealVault.sol с жёлтыми подсветками на 158/161/111
+- `clip4-tests-static.mp4` (25s) — PowerShell `npx hardhat test`, прогрессивно появляются 4 √ test passes, финал "4 passing" green
+- `clip5a-lock-static.mp4` (20s) — фронтенд lock-flow: hero → 63 в форме → encrypting → signing → pending → Locked
+- `clip5b-reveal-static.mp4` (25s) — reveal pipeline: timer=0 → trigger → fulfill → AP-001 sig → AP-002 replay → cleartext 63
+- `clip6-outro-static.mp4` (18s) — слайд 06 outro
+
+Итого 180s = 3:00. Голос Yana поверх — в CapCut кладёшь все 7 MP4 встык на видео-дорожку, на аудио-дорожку записываешь свой голос по сегментам из `VIDEO-VOICEOVER-SIMPLE.md`.
 
 
 
