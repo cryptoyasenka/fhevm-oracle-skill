@@ -1,6 +1,22 @@
 # CURRENT — fhevm-oracle-skill
 
-**Last touched:** 2026-05-11 03:05 — сегмент 3 тоже сгенерирован программно (Win+G не запускался у Yana)
+**Last touched:** 2026-05-11 12:46 — v2 для clip3 + clip5a + clip5b готовы, ждут утреннего ревью Yana
+
+## 🆕 2026-05-11 v2 (critical-only scope)
+
+Yana proснулась и выбрала scope **"только критичное"**: починить сломанный кадр clip3 + взять реальные скрины с фронта для clip5a/5b. Остальные клипы (1, 2, 4, 6) остаются v1. Готово и запушено:
+
+- **`video-clips/clip3-contract-v2.mp4`** (35.000s) — commit `0f5c084`. Сломанный zoom-out перерисован: minimap-стиль (тонкие цветные полосы по строкам) + три callout-карточки справа (AP-010 → L111, AP-001 → L158, AP-002 → L161) с правильной привязкой, badges разнесены.
+- **`video-clips/clip5a-demo-v2.mp4`** (20.000s) + **`video-clips/clip5b-reveal-v2.mp4`** (25.000s) — commit `3c2423f`. Реальные скриншоты фронта (real menu: AsyncRevealVault / Use cases / How it works / Try it / Your vaults / Activity log + GitHub) как фон + palette-matched PIL-карточки для state-анимаций поверх.
+- **`app-screenshots/state-{1..4}.png`** — реальные viewport-кадры с live https://fhevm-oracle-frontend.vercel.app (hero, how-it-works, try-it, vaults+activity), захвачены через gstack `/browse`.
+- **`scripts/gen_clip5_v2.py`** — новый скрипт рендера v2 (фон-композиция + overlays).
+
+**v1 файлы untouched** — `clip3-contract-static.mp4`, `clip5a-lock-static.mp4`, `clip5b-reveal-static.mp4` на диске, как fallback.
+
+**Утром Yana решает:** выбрать v1 ИЛИ v2 для каждого из трёх клипов перед записью голоса. Тайминги совместимы:
+- clip1 (22s) + clip2 (35s) + **clip3-v2 (35s)** + clip4 (25s) + **clip5a-v2 (20s)** + **clip5b-v2 (25s)** + clip6 (18s) = **180s ровно**
+
+## 🗒️ Прежняя заметка (v1 generation) — оставлена для контекста
 
 ## 🆕 2026-05-11 заметка для Yana
 
