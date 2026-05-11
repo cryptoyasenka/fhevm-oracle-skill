@@ -1,4 +1,4 @@
-# Voice-over SIMPLE — fhevm-oracle (≈256 слов, ≈2:50 при темпе 90 wpm)
+# Voice-over SIMPLE — fhevm-oracle (≈220 слов, ≈2:29)
 
 > **Цель:** простой английский, короткие предложения, минимум сложных кластеров.
 > Каждое предложение ≤8 слов. Темп **медленный** — 85–100 wpm.
@@ -29,9 +29,25 @@
 
 ---
 
-## Сегмент 1 (0:00–0:22) — Hook | 36 слов
+## Структура (6 клипов, clip4 dropped)
 
-> Картинка: `slides/01-title.png` на весь экран
+| # | Клип | Длит. | Слов |
+|---|---|---|---|
+| 1 | clip1-hook-static | 22s | 36 |
+| 2 | clip2-problem-static | 35s | 49 |
+| 3 | clip3-contract-v2 (cropped) | 29s | 45 |
+| 4 | clip5a-demo-v2 | 20s | 28 |
+| 5 | clip5b-reveal-v2 | 25s | 36 |
+| 6 | clip6-outro-static | 18s | 30 |
+| | **Total** | **2:29** | **224** |
+
+Средний темп: 224 слов / 149 сек ≈ **90 wpm** — медленный, удобный.
+
+---
+
+## Сегмент 1 (0:00–0:22) — Hook | 22s
+
+> Видео: clip1-hook-static.mp4
 
 «**F H E V M**.
 It keeps your data secret.
@@ -40,14 +56,11 @@ AI agents make **ten mistakes** here.
 We built a skill file to fix that.
 Plus a live contract on **Sepolia**.»
 
-**Темп:** 36 слов / 22 сек = 98 wpm. Делай паузы 0.3 сек после каждой точки.
-
 ---
 
-## Сегмент 2 (0:22–0:57) — The problem | 49 слов
+## Сегмент 2 (0:22–0:57) — The problem | 35s
 
-> Картинка: `slides/02-anti-patterns.png`
-> (или scroll по SKILL.md в VS Code — выбор по плану)
+> Видео: clip2-problem-static.mp4
 
 «AI agents skip the **signature check**.
 So **fake data passes**.
@@ -57,107 +70,60 @@ They use a sync call that does not exist on mainnet.
 They miss the time check by **one second**.
 The skill teaches all **ten traps**.»
 
-**Темп:** 49 слов / 35 сек = 84 wpm. Это медленный темп — ок, для тебя комфортно.
-
 ---
 
-## Сегмент 3 (0:57–1:32) — The contract | 54 слова
+## Сегмент 3 (0:57–1:26) — The contract | 29s
 
-> Картинка: VS Code на `contracts/AsyncRevealVault.sol`, строка 135
+> Видео: clip3-contract-v2.mp4 (обрезан с 35s до 29s, без zoom-out на minimap)
 
 «This is **a-sink ri-VEEL vawlt**.
 The demo contract from the skill.
-Look here.
 The signature check runs **first**.
 Only small input checks come before.
 The replay flag goes up **before** the value goes in.
 So the same proof can not run twice.
 The time check uses **greater than**, not equal.
-Two hundred twenty lines. One file.»
+**Four Hardhat tests pass.**»
 
-**Темп:** 54 слова / 35 сек = 93 wpm.
-
-**Что показать мышкой синхронно:**
-- На «signature check runs first» → выдели строку 152 `FHE.checkSignatures(...)`
-- На «replay flag goes up before» → скролл вниз к `v.revealed = true;` (~155)
-- На «greater than not equal» → `Ctrl+G` → 106 → выдели `if (block.timestamp <= v.revealAt)`
-- На «two hundred twenty lines» → `Ctrl+Shift+−` 3 раза (отдалить, видно весь файл)
+⚠️ Последнее предложение — компенсация за выкинутый clip4 (тесты). Произнеси с акцентом.
 
 ---
 
-## Сегмент 4 (1:32–1:57) — Tests | 33 слова
+## Сегмент 4 (1:26–1:46) — Lock demo | 20s
 
-> Терминал: `npx hardhat test` запущен
-
-«Four Hardhat tests run in mock mode.
-They cover the same traps.
-**Missing signature**.
-**Replay attack**.
-**Time off by one**.
-And the happy path.
-A contract built from the skill **passes them all**.»
-
-**Темп:** 33 слова / 25 сек = 79 wpm. Очень медленно — у тебя есть запас.
-
-⚠️ В CapCut потом ускорь середину клипа в 5×, чтобы тесты «пробежали» за 5 сек.
-
----
-
-## Сегмент 5 (1:57–2:42) — Live demo | 61 слово
-
-> Frontend: https://fhevm-oracle-frontend.vercel.app
+> Видео: clip5a-demo-v2.mp4
 
 «Now the live demo on **Sepolia**.
 I lock the number **sixty three**.
 The **S D K** encrypts it.
 I set a sixty second timer.
-Lock. Sign. Done.
-
-(пауза, ждёшь 60 сек — в монтаже ускоришь)
-
-Sixty seconds pass.
-I trigger the reveal.
-Now I call fulfill.
-The callback checks the signature.
-Sets the replay flag.
-Then writes the value.
-**Sixty three**.
-The number stayed secret until the timer.»
-
-**Темп:** 61 слово / 45 сек = 81 wpm.
-
-⚠️ Если KMS callback залип >2 мин — используй готовую tx (см. CURRENT.md антипаника блок).
+Lock. Sign. **Done.**»
 
 ---
 
-## Сегмент 6 (2:42–3:00) — Outro | 30 слов
+## Сегмент 5 (1:46–2:11) — Reveal demo | 25s
 
-> Картинка: `slides/06-outro.png`
+> Видео: clip5b-reveal-v2.mp4
+
+«Sixty seconds pass.
+I trigger the reveal.
+The callback checks the **signature** first.
+Then sets the **replay flag**.
+Then writes the value.
+**Sixty three.**
+The number stayed secret until the timer.»
+
+---
+
+## Сегмент 6 (2:11–2:29) — Outro | 18s
+
+> Видео: clip6-outro-static.mp4
 
 «Repo at **GIT-hab** dot com slash **KRIP-to ya-SEN-ka** slash f h e v m oracle skill.
 The skill file for the **bounty**.
 The contract for the **builder track**.
 License **B S D** three clause clear.
 Thanks Zama.»
-
-**Темп:** 30 слов / 18 сек = 100 wpm.
-
----
-
-## Итог по таймингу
-
-| # | Длительность | Слов | wpm |
-|---|---|---|---|
-| 1 | 22s | 36 | 98 |
-| 2 | 35s | 49 | 84 |
-| 3 | 35s | 54 | 93 |
-| 4 | 25s | 33 | 79 |
-| 5 | 45s | 61 | 81 |
-| 6 | 18s | 30 | 100 |
-| **Total** | **3:00** | **263** | **88 avg** |
-
-Запас: при темпе 88 wpm реальная длина = 263/88×60 = **179 сек = 2:59**.
-Если читаешь медленнее — режем сегмент 5 (paused waits можно ужать в CapCut).
 
 ---
 
@@ -169,18 +135,10 @@ Thanks Zama.»
 
 ---
 
-## Чем отличается от исходного `VIDEO-VOICEOVER.md`
+## Что изменилось от v1 скрипта
 
 | Было | Стало | Причина |
 |---|---|---|
-| «consistently ship broken code» | «make ten mistakes» | /kənˈsɪstəntli/ = 4 слога, кластеры |
-| «mismatch handle order against the abi-decode tuple» | удалено | непроизносимо |
-| «before flipping the replay guard» | «before the replay flag» | /flɪpɪŋ ðə/ — три /ð/ подряд |
-| «assume a sync decrypt that doesn't exist on mainnet» | «use a sync call that does not exist on mainnet» | проще, короче |
-| «enumerates all ten anti-patterns as muscle memory» | «teaches all ten traps» | /ɪˈnjuːməreɪts/ катастрофа |
-| «cheap input-validity reverts that touch no cleartext» | «small input checks come before» | в 3 раза короче |
-| «ACL discipline is preserved across every state mutation» | удалено | теряет смысл при упрощении |
-| «strict greater-than» | «greater than, not equal» | /str/+/kt/ кластер |
-| «relayer SDK takes my plaintext, produces a ciphertext handle plus a zero-knowledge proof» | «the S D K encrypts it» | вся фраза в 4 слова |
-| «The vault flags both ciphertexts as publicly decryptable» | «I trigger the reveal» | непроизносимо |
-| «BSD three-clause-clear, same license as fhevm-solidity» | «License B S D three clause clear» | убрали половину |
+| Total 3:00, 7 сегментов | Total 2:29, 6 сегментов | clip4 (Hardhat tests, 25s) выкинут из таймлайна |
+| Сегмент 3 = 35s, кончался «Two hundred twenty lines. One file.» | Сегмент 3 = 29s, кончается «Four Hardhat tests pass» | clip3-v2 обрезан до 29s (без minimap zoom-out); компенсируем выкинутый clip4 одной фразой про тесты |
+| Сегмент 5 = 45s одним блоком | Сегмент 5a (lock, 20s) + 5b (reveal, 25s) разделены | Соответствует двум клипам clip5a-v2 + clip5b-v2 |
