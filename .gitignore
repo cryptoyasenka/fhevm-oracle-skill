@@ -34,3 +34,5 @@ frontend/.next
 frontend/out
 frontend/node_modules
 package-lock.json
+video-clips/_tmp_clip4
+video-clips/_tmp_clip5
