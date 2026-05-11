@@ -53,7 +53,7 @@
 
 ### Wallet address for cUSDT prize (Sepolia or mainnet ETH compatible)
 
-> [PASTE WALLET ADDRESS — same one Yana uses for retrodrops]
+> 0xFf61c3BcaE3AC9Cd7F08671dCAfB2e37A15849f5
 
 ### License
 

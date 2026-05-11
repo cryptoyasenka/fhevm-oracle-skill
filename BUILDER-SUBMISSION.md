@@ -88,7 +88,7 @@
 
 ### Wallet address for prize
 
-> [PASTE WALLET ADDRESS]
+> 0xFf61c3BcaE3AC9Cd7F08671dCAfB2e37A15849f5
 
 ---
 
