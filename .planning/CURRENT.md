@@ -1,8 +1,43 @@
 # CURRENT — fhevm-oracle-skill
 
-**Last touched:** 2026-05-11 14:55 — ✅ ОБЕ ФОРМЫ ПОДАНЫ. Проект завершён.
+**Last touched:** 2026-05-16 — post-submission repo-hygiene audit pass (A–F), all clean.
 
 **Status: SUBMITTED** (Bounty + Builder) до дедлайна 14:59 Kyiv.
+
+## 2026-05-16 — post-submission 6-dimension repo audit (A–F)
+
+Independent re-audit of the public repo while judging is in progress (judges
+review the public repo post-deadline, so a clean repo still helps).
+
+- **A confidentiality — CLEAN.** No secret / mnemonic / private key ever
+  committed (hardhat.config uses `vars.get`). 64-hex values in tests are
+  bytes32 KMS proof / ciphertext test vectors, not keys. Public addresses in
+  docs = deployed contracts + Sepolia tx hashes + the prize wallet, all
+  correctly labeled. No personal paths / unintended emails.
+- **B AI-traces — CLEAN by design.** Claude/Cursor references in SKILL.md /
+  README / submission docs are the *product* (the skill teaches AI agents),
+  not authorship tells. No AI co-author / generator tells in any commit
+  message or in the tree outside those intentional product surfaces.
+- **C junk — fixed.** Removed internal `SUBMIT-CHECKLIST.md` from the public
+  repo (`7120ea3`); added `.gitignore` rules for the local video master and
+  `*.tsbuildinfo` (`44f608a`).
+- **D consistency — CLEAN.** Contract addresses
+  `0x256e8948057982D483C60F7c060E3253a4d6A49b` /
+  `0x839A250cC9E5a55C35EB8b47e3E9f0B42d7ad912` consistent across README /
+  SKILL.md / both submission docs / planning. Stack versions in package.json
+  + hardhat.config match the BUILDER-SUBMISSION "Stack" claim exactly.
+- **E bugs/logic — CLEAN.** `AsyncRevealVault.sol` read end-to-end: AP-001
+  (checkSignatures before any state write), AP-002 (replay guard consumed
+  first), AP-003 (`handles[]` / `abi.decode` tuple order matched), AP-010
+  (strict `>` finality) all correctly implemented; no external calls in
+  `fulfillReveal`. `npx hardhat test` → 4/4 passing, exit 0.
+- **F polish — fixed.** Added the `BSD-3-Clause-Clear` LICENSE file
+  (`afbf065`) — the license was declared in 6+ places but no LICENSE file
+  shipped. `.gitattributes` intentionally NOT added (no CRLF renormalization
+  on a live submission repo).
+
+Commits this pass: `7120ea3`, `44f608a`, `afbf065` — all pushed to
+`origin/main`, working tree clean, in sync.
 
 ## ✅ 2026-05-11 14:55 — ПОДАНО
 
