@@ -33,8 +33,13 @@ yarn.lock
 frontend/.next
 frontend/out
 frontend/node_modules
+frontend/*.tsbuildinfo
 package-lock.json
 video-clips/_tmp_clip4
 video-clips/_tmp_clip5
 video-clips/_tmp_clip5a_v2
 video-clips/_tmp_clip5b_v2
+
+# local video master + cover (40MB+ binary — never commit; YouTube is the canonical copy)
+готов/
+*.tsbuildinfo
